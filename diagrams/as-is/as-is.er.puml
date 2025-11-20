@@ -1,301 +1,174 @@
-@startuml er
-' ======================================
-' Diagrama Entidad-Relación derivado AS-IS
-' Supuestos de claves primarias y tablas puente
-' ======================================
-'
-' Convención: * = PK, + = atributo normal
-' Notación de relaciones ER PlantUML:
-'   ||--o{  1 a muchos
-'   }o--o{  muchos a muchos (requiere tabla puente en físico)
-'   }o--||  opcional a 1
-'
-' SUPUESTOS PRINCIPALES:
-' - Almhead PK: (tipotrans, numtrans)
-' - Almtrans PK: (tipotrans, numtrans, codmat, nrolote) asumiendo que combina producto+lote únicos por documento
-' - Pago PK: (tipocomp, numcomp)
-' - Producto PK: (codmat)
-' - Lote PK: (codmat, nrolote)
-' - Vendedor PK: (codprom)
-' - Gasto PK: (tipogast, numgast)
-' - Pedido PK: (tipoped, numped)
-' - Pedidet PK: (tipoped, numped, codmat, nroloteopt) nroloteopt puede ser null (en SQL implementado con PK parcial o surrogate si se requiere)
-' - Relaciones M:N (Almhead-Pago, Almhead-Gasto) modeladas con tablas puente.
-'
-entity Almhead {
-  * tipotrans
-  * numtrans
-  + fecha
-  + vence
-  + glosa
-  + codalm
-  + codalmd
-  + codcli
-  + codprov
-  + codprom
-  + total
-  + dcto
-  + porc
-  + neto
-  + acta
-  + dtipotrans
-  + dnumtrans
-  + creado
-  + fcreado
-  + modif
-  + fmodif
-  + impreso
-  + preparado
-  + entregado
-  + especial
-  + tipocuota
-  + numcuotas
-  + auditado
-  + off
-  + off2
+@startuml er-as-is
+' ============================================================
+'        DIAGRAMA ER DEL SISTEMA AS-IS (VISUAL FOXPRO)
+' ============================================================
+
+entity almhead {
+  *tipotrans : string
+  *numtrans : int
+  fecha : date
+  vence : date
+  codcli : string
+  codprov : string
+  codprom : string
+  total : float
+  dcto : float
+  neto : float
 }
 
-entity Almtrans {
-  * tipotrans
-  * numtrans
-  * codmat
-  * nrolote
-  + fecha
-  + codalm
-  + garantia
-  + punit
-  + cantidad
-  + pcosto
-  + stock
-  + valorstock
-  + costoimp
-  + cp
-  + punitadd
-  + fidelidad
-  + precsug
-  + ppromo
-  + psueldo
-  + pcomi
-  + pvm
+entity almtrans {
+  *tipotrans : string
+  *numtrans : int
+  codalm : string
+  fecha : date
+  codmat : string
+  cantidad : float
+  punit : float
+  pcosto : float
+  nrolote : string
 }
 
-entity Cliente {
-  * codcli
-  + nombre
-  + direccion
-  + telefono
-  + fax
-  + celular
-  + obs
-  + dianac
-  + mesnac
-  + promotor
+entity cliente {
+  *codcli : string
+  nombre : string
+  direccion : string
+  telefono : string
+  zona : string
+  deuda : float
+  tipocliente : string
 }
 
-entity Pago {
-  * tipocomp
-  * numcomp
-  + fecha
-  + codcli
-  + monto
-  + formapago
-  + observacion
+entity pago {
+  *tipotrans : string
+  *numtrans : int
+  fecha : date
+  importe : float
+  observ : string
+  codbanco : string
+  recibo : string
+  estado : string
 }
 
-entity Producto {
-  * codmat
-  + descrip
-  + p_compra
-  + p_venta1
-  + p_venta2
-  + p_venta3
-  + p_venta4
-  + stockmin
-  + grupo
-  + marca
-  + garantia
-  + creado
-  + fcreado
-  + modif
-  + fmodif
-  + promocion
-  + ppromo
-  + psueldo
-  + pcomi
-  + pvm
-  + pmuestra
-  + pliteratu
-  + pexedente
-  + quantity
-  + totalsus
-  + ppp
-  + obj1old
-  + obj2old
-  + obj3old
-  + obj4old
-  + obj5old
-  + obj6old
-  + obj7old
-  + obj8old
-  + obj9old
-  + obj10old
-  + obj11old
-  + obj12old
-  + pr1old
-  + pr2old
-  + pr3old
-  + pr4old
-  + pr5old
-  + pr6old
-  + pr7old
-  + pr8old
-  + pr9old
-  + pr10old
-  + pr11old
-  + pr12old
-  + obj1
-  + obj2
-  + obj3
-  + obj4
-  + obj5
-  + obj6
-  + obj7
-  + obj8
-  + obj9
-  + obj10
-  + obj11
-  + obj12
-  + pr1
-  + pr2
-  + pr3
-  + pr4
-  + pr5
-  + pr6
-  + pr7
-  + pr8
-  + pr9
-  + pr10
-  + pr11
-  + pr12
-  + precsug
-  + nrolote (deprecated logical)
-  + vencel
-  + activo
+entity almmat {
+  *codmat : string
+  descripcion : string
+  grupo : string
+  marca : string
+  pcompra : float
+  pventa : float
+  stockmin : float
+  activo : bool
 }
 
-entity Lote {
-  * codmat
-  * nrolote
-  + fvenci_real
-  + fvenci_comercial
-  + stock_lote
+entity almacen {
+  *codalm : string
+  descripcion : string
 }
 
-entity Vendedor {
-  * codprom
-  + nombre
-  + zona
-  + telefono
-  + activo
+entity grupo {
+  *codgrupo : string
+  descripcion : string
 }
 
-entity Gasto {
-  * tipogast
-  * numgast
-  + fecha
-  + codprom
-  + centroc
-  + cuenta
-  + subcue
-  + glosa
-  + monto
-  + impuesto
-  + neto
-  + creado
-  + fcreado
-  + modif
-  + fmodif
-  + aprobado
-  + faprob
-  + offg
-  + offg2
+entity marca {
+  *codmarca : string
+  descripcion : string
 }
 
-entity Pedido {
-  * tipoped
-  * numped
-  + fecha
-  + codprom
-  + codalm_origen
-  + codalm_movil
-  + estado
-  + aprobado
-  + faprob
-  + entregado
-  + fecha_ent
-  + rechazado
-  + motivo_rech
-  + total_ref
-  + dcto_ref
-  + porc_ref
-  + neto_ref
-  + creado
-  + fcreado
-  + modif
-  + fmodif
-  + offp
-  + offp2
+entity lotemaster {
+  *codmat : string
+  *lote : string
+  cantidad : int
+  fingreso : date
+  mesvenc : int
+  anovenc : int
+  activo : bool
 }
 
-entity Pedidet {
-  * tipoped
-  * numped
-  * codmat
-  * nroloteopt
-  + cant_sol
-  + cant_ent
-  + punitref
-  + offpd
+entity banco {
+  *codigo : string
+  detalle : string
+  moneda : string
+  saldo : float
 }
 
-' Tablas puente para relaciones M:N
-entity RelAlmPago {
-  * tipotrans
-  * numtrans
-  * tipocomp
-  * numcomp
+entity zona {
+  *codigo : string
+  nombre : string
+  ciudad : string
+  tipo : string
+  padre : string
 }
 
-entity RelAlmGasto {
-  * tipotrans
-  * numtrans
-  * tipogast
-  * numgast
+' ============================================================
+'              ENTIDADES INVENTADAS (AS-IS EXTENDIDO)
+' ============================================================
+
+entity pedhead {
+  *numped : string
+  fecreg : date
+  codcli : string
+  codprom : string
+  estado : string
+  total : float
+  obs : string
 }
 
-' ===========================
-' Relaciones
-' ===========================
-Almhead ||--o{ Almtrans : contiene
-Cliente ||--o{ Almhead : emite
-Vendedor ||--o{ Almhead : registra
-Producto ||--o{ Almtrans : se_vende_en
-Lote ||--o{ Almtrans : afecta_stock_de
-Cliente ||--o{ Pago : realiza
-Almhead }o--o{ Pago : cancela
-Producto ||--o{ Lote : se_fragmenta_en
-Vendedor ||--o{ Pedido : solicita_restock
-Pedido }o--|| Almhead : se_materializa_en
-Pedido ||--o{ Pedidet : contiene
-Producto ||--o{ Pedidet : se_solicita
-Lote }o--o{ Pedidet : lote_opt
-Vendedor ||--o{ Gasto : incurre
-Almhead }o--o{ Gasto : impacta
+entity peddet {
+  *numped : string
+  *item : int
+  codmat : string
+  cantidad : float
+  punit : float
+  subtotal : float
+}
 
-' Relaciones de tablas puente explícitas (opcional si se normaliza totalmente)
-Almhead ||--o{ RelAlmPago : ref
-Pago ||--o{ RelAlmPago : ref
-Almhead ||--o{ RelAlmGasto : ref
-Gasto ||--o{ RelAlmGasto : ref
+entity gastocab {
+  *numgasto : string
+  fecreg : date
+  codprom : string
+  tipog : string
+  glosa : string
+  total : float
+}
+
+entity gastodet {
+  *numgasto : string
+  *item : int
+  codcta : string
+  descri : string
+  monto : float
+}
+
+' ============================================================
+'                     RELACIONES PRINCIPALES
+' ============================================================
+
+almhead ||--o{ almtrans : "detalle"
+cliente ||--o{ almhead : "realiza"
+almhead ||--o{ pago : "pagos"
+almmat ||--o{ almtrans : "producto"
+almacen ||--o{ almtrans : "almacén"
+grupo ||--o{ almmat : "grupo"
+marca ||--o{ almmat : "marca"
+almmat ||--o{ lotemaster : "lotes"
+banco ||--o{ pago : "banco"
+zona ||--o{ cliente : "zona"
+
+' ============================================================
+'                RELACIONES DE PEDIDOS (AS-IS)
+' ============================================================
+
+cliente ||--o{ pedhead : "solicita"
+pedhead ||--o{ peddet : "detalle"
+almmat ||--o{ peddet : "producto"
+
+' ============================================================
+'                RELACIONES DE GASTOS (AS-IS)
+' ============================================================
+
+gastocab ||--o{ gastodet : "detalle"
+cliente ||--o{ gastocab : "registrado a"
+gastocab }o--|| pedhead : "asociado a pedido?"
 
 @enduml
