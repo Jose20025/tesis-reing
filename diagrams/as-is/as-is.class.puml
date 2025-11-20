@@ -1,111 +1,213 @@
-@startuml as-is
-' Diagrama de clases As-Is (estructuras basadas en DBF)
+@startuml clases
+' ============================
+' Clases principales VFP AS-IS
+' ============================
 
-class Almhead {
-  +tipotrans : string
-  +numtrans : int
-  +fecha : date
-  +vence : date
-  +codcli : string
-  +codprov : string
-  +codprom : string
-  +total : float
-  +dcto : float
-  +neto : float
+skinparam classAttributeIconSize 0
+
+class Almhead <<DBF>> {
+    +string  tipotrans
+    +number  numtrans
+    +date    fecha
+    +date    vence
+    +string  glosa
+    +string  codalm
+    +string  codalmd
+    +string  codcli
+    +string  codprov
+    +string  codprom
+    +number  total
+    +number  dcto
+    +number  porc
+    +number  neto
+    +number  acta
+    +string  dtipotrans
+    +number  dnumtrans
+    +string  creado
+    +datetime fcreado
+    +string  modif
+    +datetime fmodif
+    +number  impreso
+    +bool    preparado
+    +bool    entregado
+    +number  especial
+    +string  tipocuota
+    +number  numcuotas
+    +date    auditado
+    +number  off
+    +number  off2
 }
 
-class Almtrans {
-  +tipotrans : string
-  +numtrans : int
-  +codalm : string
-  +fecha : date
-  +codmat : string
-  +cantidad : float
-  +punit : float
-  +pcosto : float
-  +nrolote : string
+class Almtrans <<DBF>> {
+    +string  tipotrans
+    +number  numtrans
+    +string  codalm
+    +date    fecha
+    +string  codmat
+    +string  garantia
+    +number  punit
+    +number  cantidad
+    +number  pcosto
+    +number  stock
+    +number  valorstock
+    +number  costoimp
+    +bool    cp
+    +number  punitadd
+    +number  fidelidad
+    +number  precsug
+    +string  nrolote
+    +number  ppromo
+    +number  psueldo
+    +number  pcomi
+    +number  pvm
 }
 
-class Cliente {
-  +codcli : string
-  +nombre : string
-  +direccion : string
-  +telefono : string
-  +zona : string
-  +deuda : float
-  +tipocliente : string
+class Cliente <<DBF>> {
+    +string codcli
+    +string nombre
+    +string direccion
+    +string telefono
+    +string fax
+    +string celular
+    +string obs
+    +number dianac
+    +number mesnac
+    +string promotor
 }
 
-class Pago {
-  +tipotrans : string
-  +numtrans : int
-  +fecha : date
-  +importe : float
-  +observ : string
-  +codbanco : string
-  +recibo : string
-  +estado : string
+class Pago <<DBF>> {
+    +string   tipocomp      ' tipo de comprobante
+    +number   numcomp       ' número de comprobante / recibo
+    +datetime fecha
+    +string   codcli
+    +number   monto
+    +string   formapago
+    +string   observacion
 }
 
-class Almmat {
-  +codmat : string
-  +descripcion : string
-  +grupo : string
-  +marca : string
-  +pcompra : float
-  +pventa : float
-  +stockmin : float
-  +activo : bool
+class Producto <<DBF>> {
+    +string codmat
+    +string descrip
+    +number p_compra
+    +number p_venta1
+    +number p_venta2
+    +number p_venta3
+    +number p_venta4
+    +number stockmin
+    +string grupo
+    +string marca
+    +number garantia
+    +string creado
+    +datetime fcreado
+    +string modif
+    +datetime fmodif
+    +string promocion
+    +number ppromo
+    +number psueldo
+    +number pcomi
+    +number pvm
+    +number pmuestra
+    +number pliteratu
+    +number pexedente
+    +number quantity
+    +number totalsus
+    +number ppp
+    +number obj1old
+    +number obj2old
+    +number obj3old
+    +number obj4old
+    +number obj5old
+    +number obj6old
+    +number obj7old
+    +number obj8old
+    +number obj9old
+    +number obj10old
+    +number obj11old
+    +number obj12old
+    +number pr1old
+    +number pr2old
+    +number pr3old
+    +number pr4old
+    +number pr5old
+    +number pr6old
+    +number pr7old
+    +number pr8old
+    +number pr9old
+    +number pr10old
+    +number pr11old
+    +number pr12old
+    +number obj1
+    +number obj2
+    +number obj3
+    +number obj4
+    +number obj5
+    +number obj6
+    +number obj7
+    +number obj8
+    +number obj9
+    +number obj10
+    +number obj11
+    +number obj12
+    +number pr1
+    +number pr2
+    +number pr3
+    +number pr4
+    +number pr5
+    +number pr6
+    +number pr7
+    +number pr8
+    +number pr9
+    +number pr10
+    +number pr11
+    +number pr12
+    +number precsug
+    +string nrolote
+    +date   vencel
+    +string activo
 }
 
-class Almacen {
-  +codalm : string
-  +descripcion : string
+class Lote <<DBF>> {
+    +string codmat
+    +string nrolote
+    +date   fvenci_real
+    +date   fvenci_comercial
+    +number stock_lote
 }
 
-class Grupo {
-  +codgrupo : string
-  +descripcion : string
+class Vendedor <<DBF>> {
+    +string codprom
+    +string nombre
+    +string zona
+    +string telefono
+    +bool   activo
 }
 
-class Marca {
-  +codmarca : string
-  +descripcion : string
-}
+' ============================
+' Relaciones estructurales
+' ============================
 
-class LoteMaster {
-  +codmat : string
-  +lote : string
-  +cantidad : int
-  +fingreso : date
-  +mesvenc : int
-  +anovenc : int
-  +activo : bool
-}
+' Documento (almhead) con sus líneas de detalle (almtrans)
+Almhead "1" o-- "*" Almtrans : contiene
 
-class Banco {
-  +codigo : string
-  +detalle : string
-  +moneda : string
-  +saldo : float
-}
+' Documento asociado a cliente
+Cliente "1" o-- "*" Almhead : emite
 
-class Zona {
-  +codigo : string
-  +nombre : string
-  +ciudad : string
-  +tipo : string
-  +padre : string
-}
+' Documento asociado a vendedor (promotor)
+Vendedor "1" o-- "*" Almhead : registra
 
-Almhead "1" --> "many" Almtrans : detalle
-Cliente "1" --> "many" Almhead : realiza
-Almhead "1" --> "many" Pago : pagos
-Almmat "1" --> "many" Almtrans : producto
-Almacen "1" --> "many" Almtrans : almacén
-Grupo "1" --> "many" Almmat : grupo
-Marca "1" --> "many" Almmat : marca
-Almmat "1" --> "many" LoteMaster : lotes
-Banco "1" --> "many" Pago : banco
-Zona "1" --> "many" Cliente : zona
+' Detalle de almacén vinculado a producto
+Producto "1" o-- "*" Almtrans : se_vende_en
+
+' Detalle de almacén vinculado a lote
+Lote "1" o-- "*" Almtrans : afecta_stock_de
+
+' Pagos aplicados a clientes
+Cliente "1" o-- "*" Pago : realiza
+
+' Pagos relacionados lógicamente con documentos
+Almhead "0..*" -- "0..*" Pago : cancela
+
+' Relación lógica producto-lote
+Producto "1" o-- "*" Lote : se_fragmenta_en
+
 @enduml
