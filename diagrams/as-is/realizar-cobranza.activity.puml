@@ -1,0 +1,11 @@
+@startuml realizar-cobranza
+' Diagrama de actividades: Proceso de cobranza As-Is
+
+start
+:Consultar cliente\nen app móvil;
+:Listar facturas pendientes;
+:Seleccionar facturas a cobrar;
+:Registrar monto, fecha\ny medio de pago;
+:Guardar cobranza en\nBD de la app;
+stop
+@enduml

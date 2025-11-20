@@ -1,0 +1,13 @@
+@startuml realizar-venta
+' Diagrama de actividades: Proceso de venta As-Is
+
+start
+:Seleccionar cliente\nen app móvil;
+:Seleccionar productos\ny cantidades;
+:Definir tipo de venta\n(contado / crédito);
+:Aplicar precios y promociones;
+:Confirmar venta\nen la app móvil;
+:Registrar venta en\nBD de la app;
+stop
+
+@enduml

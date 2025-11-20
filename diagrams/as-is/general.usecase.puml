@@ -1,0 +1,21 @@
+@startuml as-is
+' Casos de uso As-Is (app móvil + VFP) corregido
+
+actor Vendedor as V
+actor Administrador as A
+
+usecase "Registrar venta\n(en app móvil)" as UC1
+usecase "Registrar cobranza\n(en app móvil)" as UC2
+usecase "Registrar pedido\nhacia almacén" as UC3
+usecase "Generar reportes\n(en sistema VFP)" as UC5
+usecase "Ejecutar sincronización\napp → DBF VFP" as UC4
+
+V --> UC1
+V --> UC2
+V --> UC3
+V --> UC5
+
+A --> UC4
+V --> UC4
+
+@enduml

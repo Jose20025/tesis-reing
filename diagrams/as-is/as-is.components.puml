@@ -1,0 +1,29 @@
+@startuml as-is.components
+' Diagrama de componentes As-Is (app móvil + VFP + DBF)
+
+node "Dispositivo del vendedor" as Device {
+  [App móvil\n(Ventas / Cobranzas / Pedidos)] as APP
+}
+
+node "Infraestructura VFP" as Infra {
+  [Aplicación VFP\n(sistema de escritorio)] as VFP
+}
+
+node "Servidor de archivos\n(carpetas DBF compartidas)" as Server {
+  database "DBF vendedor A" as DBF1
+  database "DBF vendedor B" as DBF2
+  database "DBF otros vendedores" as DBFN
+}
+
+node "Almacén central /\nÁrea administrativa" as ALM {
+  [Operadores de almacén\ny administración] as OPER
+}
+
+APP --> VFP : "Sincronización de datos\n(ventas, cobranzas, pedidos)"
+VFP --> DBF1 : "Lectura / escritura"
+VFP --> DBF2 : "Lectura / escritura"
+VFP --> DBFN : "Lectura / escritura"
+
+APP --> OPER : "Pedidos a almacén"
+OPER --> APP : "Confirmación / entrega física"
+@enduml

@@ -1,0 +1,111 @@
+@startuml as-is
+' Diagrama de clases As-Is (estructuras basadas en DBF)
+
+class Almhead {
+  +tipotrans : string
+  +numtrans : int
+  +fecha : date
+  +vence : date
+  +codcli : string
+  +codprov : string
+  +codprom : string
+  +total : float
+  +dcto : float
+  +neto : float
+}
+
+class Almtrans {
+  +tipotrans : string
+  +numtrans : int
+  +codalm : string
+  +fecha : date
+  +codmat : string
+  +cantidad : float
+  +punit : float
+  +pcosto : float
+  +nrolote : string
+}
+
+class Cliente {
+  +codcli : string
+  +nombre : string
+  +direccion : string
+  +telefono : string
+  +zona : string
+  +deuda : float
+  +tipocliente : string
+}
+
+class Pago {
+  +tipotrans : string
+  +numtrans : int
+  +fecha : date
+  +importe : float
+  +observ : string
+  +codbanco : string
+  +recibo : string
+  +estado : string
+}
+
+class Almmat {
+  +codmat : string
+  +descripcion : string
+  +grupo : string
+  +marca : string
+  +pcompra : float
+  +pventa : float
+  +stockmin : float
+  +activo : bool
+}
+
+class Almacen {
+  +codalm : string
+  +descripcion : string
+}
+
+class Grupo {
+  +codgrupo : string
+  +descripcion : string
+}
+
+class Marca {
+  +codmarca : string
+  +descripcion : string
+}
+
+class LoteMaster {
+  +codmat : string
+  +lote : string
+  +cantidad : int
+  +fingreso : date
+  +mesvenc : int
+  +anovenc : int
+  +activo : bool
+}
+
+class Banco {
+  +codigo : string
+  +detalle : string
+  +moneda : string
+  +saldo : float
+}
+
+class Zona {
+  +codigo : string
+  +nombre : string
+  +ciudad : string
+  +tipo : string
+  +padre : string
+}
+
+Almhead "1" --> "many" Almtrans : detalle
+Cliente "1" --> "many" Almhead : realiza
+Almhead "1" --> "many" Pago : pagos
+Almmat "1" --> "many" Almtrans : producto
+Almacen "1" --> "many" Almtrans : almacén
+Grupo "1" --> "many" Almmat : grupo
+Marca "1" --> "many" Almmat : marca
+Almmat "1" --> "many" LoteMaster : lotes
+Banco "1" --> "many" Pago : banco
+Zona "1" --> "many" Cliente : zona
+@enduml

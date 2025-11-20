@@ -1,0 +1,17 @@
+@startuml pedido-almacen
+' Diagrama de actividades: Proceso de pedido a almacén As-Is
+
+start
+:Revisar stock del vehículo\n(inventario del vendedor);
+:Ingresar al módulo de pedidos\nen la app móvil;
+:Seleccionar productos a solicitar;
+:Indicar cantidades requeridas;
+:Confirmar pedido en la app;
+:Guardar pedido en\nBD de la app;
+:Almacén central revisa\nel pedido;
+:Preparar productos solicitados;
+:Entregar mercadería\nal vendedor;
+:Actualizar stock del vehículo\n(formal o manualmente);
+stop
+
+@enduml
