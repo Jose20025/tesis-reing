@@ -76,8 +76,8 @@ class Cliente <<DBF>> {
 }
 
 class Pago <<DBF>> {
-    +string   tipocomp      ' tipo de comprobante
-    +number   numcomp       ' número de comprobante / recibo
+    +string   tipocomp      
+    +number   numcomp       
     +datetime fecha
     +string   codcli
     +number   monto
@@ -182,6 +182,65 @@ class Vendedor <<DBF>> {
     +bool   activo
 }
 
+class Gasto <<DBF>> {
+    +string  tipogast
+    +number  numgast
+    +date    fecha
+    +string  codprom
+    +string  centroc
+    +string  cuenta
+    +string  subcue
+    +string  glosa
+    +number  monto
+    +number  impuesto
+    +number  neto
+    +string  creado
+    +datetime fcreado
+    +string  modif
+    +datetime fmodif
+    +bool    aprobado
+    +date    faprob
+    +number  offg
+    +number  offg2
+}
+
+class Pedido <<DBF>> {
+    +string   tipoped
+    +number   numped
+    +date     fecha
+    +string   codprom        
+    +string   codalm_origen  
+    +string   codalm_movil   
+    +string   estado         
+    +bool     aprobado
+    +date     faprob
+    +bool     entregado
+    +date     fecha_ent
+    +bool     rechazado
+    +string   motivo_rech
+    +number   total_ref      
+    +number   dcto_ref
+    +number   porc_ref
+    +number   neto_ref
+    +string   creado
+    +datetime fcreado
+    +string   modif
+    +datetime fmodif
+    +number   offp
+    +number   offp2
+}
+
+class Pedidet <<DBF>> {
+    +string  tipoped
+    +number  numped
+    +string  codmat
+    +number  cant_sol
+    +number  cant_ent
+    +number  punitref
+    +string  nroloteopt
+    +number  offpd
+}
+
 ' ============================
 ' Relaciones estructurales
 ' ============================
@@ -209,5 +268,16 @@ Almhead "0..*" -- "0..*" Pago : cancela
 
 ' Relación lógica producto-lote
 Producto "1" o-- "*" Lote : se_fragmenta_en
+
+' Pedido de reposición móvil (sin cliente) asociado a vendedor y documento de movimiento
+Vendedor "1" o-- "*" Pedido : solicita_restock
+Pedido "0..1" -- "1" Almhead : se_materializa_en
+Pedido "1" o-- "*" Pedidet : contiene
+Producto "1" o-- "*" Pedidet : se_solicita
+Lote "0..1" o-- "*" Pedidet : lote_opt
+
+' Gastos asociados a vendedor y referenciables por documentos
+Vendedor "1" o-- "*" Gasto : incurre
+Almhead "0..*" -- "0..*" Gasto : impacta
 
 @enduml
