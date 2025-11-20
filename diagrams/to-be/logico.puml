@@ -1,0 +1,171 @@
+@startuml ModeloLogicoCentralizado
+
+title Modelo lógico relacional - Módulo de vendedores
+
+entity "usuarios" as usuarios {
+  * id
+  --
+  nombre
+  username
+  password
+  vendedor_id
+  is_activo
+}
+
+entity "vendedores" as vendedores {
+  * id
+  --
+  codigo
+  nombre
+  is_activo
+  created_at
+  updated_at
+}
+
+entity "productos" as productos {
+  * id
+  --
+  codigo
+  nombre
+  grupo_id
+  marca_id
+  costo
+  precio
+  is_activo
+  created_at
+  updated_at
+}
+
+entity "lotes_producto" as lotes_producto {
+  * id
+  --
+  producto_id
+  lote
+  cantidad_importada
+  fecha_ingreso
+  mes_vencimiento
+  año_vencimiento
+  is_activo
+  created_at
+  updated_at
+}
+
+entity "venta" as venta {
+  * id
+  --
+  tipo_transaccion
+  fecha
+  cliente_id
+  vendedor_id
+  total
+  descuento
+  neto
+}
+
+entity "detalle_venta" as detalle_venta {
+  * id
+  --
+  venta_id
+  almacen_id
+  producto_id
+  cantidad
+  precio_unitario
+  lote_id
+}
+
+entity "almacenes" as almacenes {
+  * id
+  --
+  codigo
+  descripcion
+  vendedor_id
+}
+
+entity "clientes" as clientes {
+  * id
+  --
+  codigo
+  nombre
+  direccion
+  telefono
+  zona_id
+}
+
+entity "zonas" as zonas {
+  * id
+  --
+  codigo
+  nombre
+  ciudad
+}
+
+entity "billeteras" as billeteras {
+  * id
+  --
+  codigo
+  descripcion
+  moneda
+  vendedor_id
+}
+
+entity "cobranzas" as cobranzas {
+  * id
+  --
+  venta_id
+  fecha
+  importe
+  observaciones
+  billetera_id
+  recibo
+  vendedor_id
+}
+
+entity "marcas_producto" as marcas_producto {
+  * id
+  --
+  codigo
+  descripcion
+}
+
+entity "grupos_producto" as grupos_producto {
+  * id
+  --
+  codigo
+  descripcion
+}
+
+' Relación usuarios - vendedores
+usuarios }o--|| vendedores : "FK vendedor_id"
+
+' Relaciones productos / catálogos
+productos }o--|| grupos_producto : "FK grupo_id"
+productos }o--|| marcas_producto : "FK marca_id"
+
+' Lotes
+lotes_producto }o--|| productos : "FK producto_id"
+
+' Ventas
+venta }o--|| clientes : "FK cliente_id"
+venta }o--|| vendedores : "FK vendedor_id"
+
+' Detalle de venta
+detalle_venta }o--|| venta : "FK venta_id"
+detalle_venta }o--|| almacenes : "FK almacen_id"
+detalle_venta }o--|| productos : "FK producto_id"
+detalle_venta }o--|| lotes_producto : "FK lote_id"
+
+' Clientes / zonas
+clientes }o--|| zonas : "FK zona_id"
+
+' Almacenes / vendedores
+almacenes }o--|| vendedores : "FK vendedor_id"
+
+' Billeteras / vendedores
+billeteras }o--|| vendedores : "FK vendedor_id"
+
+' Cobranzas
+cobranzas }o--|| venta : "FK venta_id"
+cobranzas }o--|| billeteras : "FK billetera_id"
+cobranzas }o--|| vendedores : "FK vendedor_id"
+
+@enduml

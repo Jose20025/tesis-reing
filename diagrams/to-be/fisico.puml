@@ -1,0 +1,171 @@
+@startuml ModeloFisicoCentralizado
+
+title Modelo físico (MariaDB/MySQL) - Módulo de vendedores
+
+entity "usuarios" as usuarios {
+  * id : INT AUTO_INCREMENT
+  --
+  nombre      : VARCHAR(100)
+  username    : VARCHAR(50)
+  password    : VARCHAR(255)
+  vendedor_id : INT
+  is_activo   : TINYINT(1)
+}
+
+entity "vendedores" as vendedores {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo     : VARCHAR(20)
+  nombre     : VARCHAR(150)
+  is_activo  : TINYINT(1)
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "productos" as productos {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo     : VARCHAR(30)
+  nombre     : VARCHAR(200)
+  grupo_id   : INT
+  marca_id   : INT
+  costo      : DECIMAL(15,2)
+  precio     : DECIMAL(15,2)
+  is_activo  : TINYINT(1)
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "lotes_producto" as lotes_producto {
+  * id : INT AUTO_INCREMENT
+  --
+  producto_id        : INT
+  lote               : VARCHAR(50)
+  cantidad_importada : INT
+  fecha_ingreso      : DATE
+  mes_vencimiento    : TINYINT
+  año_vencimiento    : SMALLINT
+  is_activo          : TINYINT(1)
+  created_at         : DATETIME
+  updated_at         : DATETIME
+}
+
+entity "venta" as venta {
+  * id : INT AUTO_INCREMENT
+  --
+  tipo_transaccion : ENUM('VCR','VCO')
+  fecha            : DATE
+  cliente_id       : INT
+  vendedor_id      : INT
+  total            : DECIMAL(15,2)
+  descuento        : DECIMAL(15,2)
+  neto             : DECIMAL(15,2)
+}
+
+entity "detalle_venta" as detalle_venta {
+  * id : INT AUTO_INCREMENT
+  --
+  venta_id       : INT
+  almacen_id     : INT
+  producto_id    : INT
+  cantidad       : INT
+  precio_unitario: DECIMAL(15,2)
+  lote_id        : INT
+}
+
+entity "almacenes" as almacenes {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo      : VARCHAR(20)
+  descripcion : VARCHAR(150)
+  vendedor_id : INT
+}
+
+entity "clientes" as clientes {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo    : VARCHAR(20)
+  nombre    : VARCHAR(200)
+  direccion : VARCHAR(255)
+  telefono  : VARCHAR(30)
+  zona_id   : INT
+}
+
+entity "zonas" as zonas {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo : VARCHAR(20)
+  nombre : VARCHAR(150)
+  ciudad : VARCHAR(100)
+}
+
+entity "billeteras" as billeteras {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo      : VARCHAR(20)
+  descripcion : VARCHAR(150)
+  moneda      : ENUM('BOLIVIANOS','DOLARES')
+  vendedor_id : INT
+}
+
+entity "cobranzas" as cobranzas {
+  * id : INT AUTO_INCREMENT
+  --
+  venta_id      : INT
+  fecha         : DATE
+  importe       : DECIMAL(15,2)
+  observaciones : VARCHAR(255)
+  billetera_id  : INT
+  recibo        : VARCHAR(50)
+  vendedor_id   : INT
+}
+
+entity "marcas_producto" as marcas_producto {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo      : VARCHAR(20)
+  descripcion : VARCHAR(150)
+}
+
+entity "grupos_producto" as grupos_producto {
+  * id : INT AUTO_INCREMENT
+  --
+  codigo      : VARCHAR(20)
+  descripcion : VARCHAR(150)
+}
+
+' Relación usuarios - vendedores
+usuarios }o--|| vendedores : "FK vendedor_id"
+
+' Relaciones productos / catálogos
+productos }o--|| grupos_producto : "FK grupo_id"
+productos }o--|| marcas_producto : "FK marca_id"
+
+' Lotes
+lotes_producto }o--|| productos : "FK producto_id"
+
+' Ventas
+venta }o--|| clientes : "FK cliente_id"
+venta }o--|| vendedores : "FK vendedor_id"
+
+' Detalle de venta
+detalle_venta }o--|| venta : "FK venta_id"
+detalle_venta }o--|| almacenes : "FK almacen_id"
+detalle_venta }o--|| productos : "FK producto_id"
+detalle_venta }o--|| lotes_producto : "FK lote_id"
+
+' Clientes / zonas
+clientes }o--|| zonas : "FK zona_id"
+
+' Almacenes / vendedores
+almacenes }o--|| vendedores : "FK vendedor_id"
+
+' Billeteras / vendedores
+billeteras }o--|| vendedores : "FK vendedor_id"
+
+' Cobranzas
+cobranzas }o--|| venta : "FK venta_id"
+cobranzas }o--|| billeteras : "FK billetera_id"
+cobranzas }o--|| vendedores : "FK vendedor_id"
+
+@enduml

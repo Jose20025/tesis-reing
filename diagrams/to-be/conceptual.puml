@@ -1,0 +1,45 @@
+@startuml ModeloConceptualCentralizado
+
+title Modelo conceptual del módulo de vendedores - Importadora KAIS
+
+' Entidades principales
+class Vendedor
+class Usuario
+class Cliente
+class Zona
+class Producto
+class GrupoProducto
+class MarcaProducto
+class LoteProducto
+class Almacen
+class Venta
+class DetalleVenta
+class Billetera
+class Cobranza
+
+' Relaciones principales
+Vendedor "1" -- "0..*" Venta : registra
+Cliente  "1" -- "0..*" Venta : compra
+Venta    "1" -- "1..*" DetalleVenta : se_descompone_en
+
+Producto "1" -- "0..*" DetalleVenta : es_vendido_en
+Producto "1" -- "0..*" LoteProducto : se_importa_en
+LoteProducto "1" -- "0..*" DetalleVenta : se_utiliza_en
+
+Vendedor "1" -- "0..*" Billetera : posee
+Billetera "1" -- "0..*" Cobranza : registra
+Venta "1" -- "0..*" Cobranza : se_cancela_con
+
+Zona "1" -- "0..*" Cliente : agrupa
+Vendedor "1" -- "0..*" Almacen : gestiona
+Almacen "1" -- "0..*" DetalleVenta : abastece
+
+Vendedor "1" -- "0..*" Usuario : es_operado_por
+
+Producto "1" -- "0..*" MarcaProducto : pertenece_a >
+MarcaProducto "1" -- "0..*" Producto
+
+Producto "1" -- "0..*" GrupoProducto : pertenece_a >
+GrupoProducto "1" -- "0..*" Producto
+
+@enduml
