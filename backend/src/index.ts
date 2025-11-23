@@ -1,18 +1,22 @@
-import express from 'express';
-import morgan from 'morgan';
-import cors from 'cors';
+import { app } from './app';
+import { envConfig } from './config/env.config';
+import { AppDataSource } from './db/data-source';
 
-const app = express();
+const startServer = async () => {
+  try {
+    // Conectar a la base de datos
+    await AppDataSource.initialize();
+    console.log('Conexión a la base de datos establecida.');
 
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(cors());
+    // Iniciar el servidor
+    app.listen(envConfig.PORT, () => {
+      console.log(`Servidor corriendo en http://localhost:${envConfig.PORT}`);
+    });
+  } catch (error) {
+    console.error('Error iniciando el servidor:', error);
 
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
+    process.exit(1);
+  }
+};
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+startServer();
