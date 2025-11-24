@@ -21,50 +21,50 @@ def print_spacer():
 
 
 if __name__ == "__main__":
-    # etl_comisiones()
-    # print_spacer()
+    etl_comisiones()
+    print_spacer()
 
-    # etl_vendedores()
-    # print_spacer()
+    etl_vendedores()
+    print_spacer()
 
-    # etl_proveedores()
-    # print_spacer()
+    etl_proveedores()
+    print_spacer()
 
-    # etl_zonas()
-    # print_spacer()
+    etl_zonas()
+    print_spacer()
 
-    # etl_clientes()
-    # print_spacer()
+    etl_clientes()
+    print_spacer()
 
-    # etl_marcas()
-    # print_spacer()
+    etl_marcas()
+    print_spacer()
 
-    # etl_grupos()
-    # print_spacer()
+    etl_grupos()
+    print_spacer()
 
-    # etl_productos()
-    # print_spacer()
+    etl_productos()
+    print_spacer()
 
-    # etl_lotes()
-    # print_spacer()
+    etl_lotes()
+    print_spacer()
 
-    # etl_almacenes()
-    # print_spacer()
+    etl_almacenes()
+    print_spacer()
 
-    # etl_billeteras()
-    # print_spacer()
+    etl_billeteras()
+    print_spacer()
 
-    # etl_ventas()
-    # print_spacer()
+    etl_ventas()
+    print_spacer()
 
-    # etl_detalle_ventas()
-    # print_spacer()
+    etl_detalle_ventas()
+    print_spacer()
 
-    # etl_compras()
-    # print_spacer()
+    etl_compras()
+    print_spacer()
 
-    # etl_detalle_compras()
-    # print_spacer()
+    etl_detalle_compras()
+    print_spacer()
 
     etl_cobranzas()
     print_spacer()
