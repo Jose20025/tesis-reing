@@ -1,4 +1,3 @@
-import json
 from typing import Dict, List
 
 from db_destino import MARIADB_CONNECTION
@@ -17,8 +16,6 @@ def get_zonas():
     """
 
     zonas = execute_query(cursor, query)
-
-    print(json.dumps(zonas, indent=4, ensure_ascii=False))
 
     return zonas
 
