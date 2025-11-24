@@ -20,8 +20,9 @@ def create_connection(connection_string: str) -> pyodbc.Connection:
     return connection
 
 
-def get_dbf_connection_string():
-    return f"DRIVER=Microsoft Visual FoxPro Driver;SourceType=DBF;SourceDB={DBF_PATH};Exclusive=No;Collate=Machine;NULL=NO;DELETED=YES;BACKGROUNDFETCH=NO;"
+def get_dbf_connection_string(include_deleted: bool = True) -> str:
+    deleted_flag = "YES" if include_deleted else "NO"
+    return f"DRIVER=Microsoft Visual FoxPro Driver;SourceType=DBF;SourceDB={DBF_PATH};Exclusive=No;Collate=Machine;NULL=NO;DELETED={deleted_flag};BACKGROUNDFETCH=NO;"
 
 
 DBF_CONNECTION_STRING = get_dbf_connection_string()
