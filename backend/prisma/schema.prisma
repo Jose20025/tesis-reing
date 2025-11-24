@@ -53,7 +53,7 @@ model Vendedor {
   nombre    String
   isActivo  Boolean  @default(true) @map("is_activo")
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at") @default(now())
 
   // Relaciones inversas
   usuarios   Usuario[]
@@ -75,7 +75,7 @@ model Producto {
   precio    Float
   isActivo  Boolean  @default(true) @map("is_activo")
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at") @default(now())
 
   // Relaciones
   grupo         GrupoProducto  @relation(fields: [grupoId], references: [id])
