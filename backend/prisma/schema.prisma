@@ -63,6 +63,7 @@ model Vendedor {
   billeteras Billetera[]
   cobranzas  Cobranza[]
   comision   Comision @relation(fields: [comisionId], references: [id])
+  compras    Compra[]
 
   @@map("vendedores")
 }
@@ -107,6 +108,7 @@ model LoteProducto {
 
 model Venta {
   id              Int                 @id @default(autoincrement())
+  idCorrelativo   Int                 @map("id_correlativo")
   tipoTransaccion TipoTransaccionEnum @map("tipo_transaccion")
   fecha           DateTime            @default(now())
   clienteId       Int                 @map("cliente_id")
@@ -253,4 +255,33 @@ model Comision {
   vendedores Vendedor[]
 
   @@map("comisiones")
+}
+
+model Proveedor {
+  id        Int    @id @default(autoincrement())
+  codigo    String @unique
+  nombre    String
+  telefono  String?
+
+  // Relaciones
+  compras Compra[]
+
+  @@map("proveedores")
+}
+
+model Compra {
+  id             Int                 @id @default(autoincrement())
+  idCorrelativo  Int                 @map("id_correlativo")
+  fecha         DateTime            @default(now())
+  proveedorId   Int                 @map("proveedor_id")
+  vendedorId    Int                 @map("vendedor_id")
+  total          Float
+  descuento      Float               @default(0)
+  neto           Float
+
+  // Relaciones
+  proveedor   Proveedor    @relation(fields: [proveedorId], references: [id])
+  vendedor    Vendedor     @relation(fields: [vendedorId], references: [id])
+
+  @@map("compras")
 }
