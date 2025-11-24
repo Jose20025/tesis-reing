@@ -7,6 +7,7 @@ from etl_process.productos.grupos import etl_grupos
 from etl_process.productos.marcas import etl_marcas
 from etl_process.productos.productos import etl_productos
 from etl_process.vendedores import etl_vendedores
+from etl_process.ventas.ventas import etl_ventas
 from etl_process.zonas import etl_zonas
 
 
@@ -43,4 +44,7 @@ if __name__ == "__main__":
     print_spacer()
 
     etl_billeteras()
+    print_spacer()
+
+    etl_ventas()
     print_spacer()
