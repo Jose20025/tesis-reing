@@ -7,6 +7,7 @@ import { comisionesController } from './features/comisiones/comisiones.controlle
 import { gruposProductoController } from './features/grupos-producto/grupos-producto.controller';
 import { marcasProductoController } from './features/marcas-producto/marcas-producto.controller';
 import { proveedoresController } from './features/proveedores/proveedores.controller';
+import { reportesController } from './features/reportes/reportes.controller';
 import { usuariosController } from './features/usuarios/usuarios.controller';
 import { vendedoresController } from './features/vendedores/vendedores.controller';
 import { zonasController } from './features/zonas/zonas.controller';
@@ -42,6 +43,9 @@ app.use('/comisiones', comisionesController);
 app.use('/grupos-producto', gruposProductoController);
 app.use('/marcas-producto', marcasProductoController);
 app.use('/proveedores', proveedoresController);
+
+// Reportes
+app.use('/reportes', reportesController);
 
 // Error handler
 app.use(errorHandler);
