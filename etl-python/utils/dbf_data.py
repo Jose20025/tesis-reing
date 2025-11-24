@@ -72,17 +72,17 @@ VENDEDORES = [
     {
         "codigo": "L1",
         "nombre": "Vendedor L1",
-        "carpeta": "VendedorL1",
+        "carpeta": "VendeL1",
     },
     {
         "codigo": "L2",
         "nombre": "Vendedor L2",
-        "carpeta": "VendedorL2",
+        "carpeta": "VendeL2",
     },
     {
         "codigo": "L3",
         "nombre": "Vendedor L3",
-        "carpeta": "VendedorL3",
+        "carpeta": "VendeL3",
     },
     {
         "codigo": "C1",
