@@ -1,3 +1,4 @@
+from etl_process.almacenes import etl_almacenes
 from etl_process.clientes import etl_clientes
 from etl_process.lotes import etl_lotes
 from etl_process.productos.grupos import etl_grupos
@@ -36,4 +37,7 @@ if __name__ == "__main__":
     print_spacer()
 
     etl_lotes()
+    print_spacer()
+
+    etl_almacenes()
     print_spacer()
