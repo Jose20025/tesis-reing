@@ -3,6 +3,8 @@ import express from 'express';
 import morgan from 'morgan';
 
 import { usuariosController } from './features/usuarios/usuarios.controller';
+import { vendedoresController } from './features/vendedores/vendedores.controller';
+import { errorHandler } from './lib/error-handler';
 
 export const app = express();
 
@@ -27,3 +29,7 @@ app.get('/', (_, res) => {
 
 // Rutas
 app.use('/usuarios', usuariosController);
+app.use('/vendedores', vendedoresController);
+
+// Error handler
+app.use(errorHandler);
