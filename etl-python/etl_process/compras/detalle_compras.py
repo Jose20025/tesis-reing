@@ -1,11 +1,11 @@
-import csv
-import os
 from typing import Dict, List
 
 import pyodbc
 
 from db_destino import MARIADB_CONNECTION
 from utils.dbf_data import VENDEDORES
+import csv
+import os
 from utils.dbf_utils import (
     DBF_CONNECTION_STRING,
     DBF_PATH,
@@ -15,11 +15,11 @@ from utils.dbf_utils import (
 
 
 # Extract
-def get_detalle_ventas():
+def get_detalle_compras():
     connection = create_connection(DBF_CONNECTION_STRING)
     cursor = connection.cursor()
 
-    detalle_ventas = dict()
+    detalle_compras = dict()
 
     for vendedor in VENDEDORES:
         try:
@@ -31,30 +31,30 @@ def get_detalle_ventas():
                 SELECT numtrans,
                 codalm,
                 codmat,
-                (cantidad * -1) as cantidad,
+                cantidad,
                 punit,
                 nrolote
                 FROM {ruta}/almtrans
-                WHERE tipotrans IN ('VCR', 'VCO')
+                WHERE tipotrans IN ('COM')
             """
 
             resultado = execute_query(cursor, query)
 
-            detalle_ventas[codigo_vendedor] = resultado
+            detalle_compras[codigo_vendedor] = resultado
 
         except pyodbc.ProgrammingError as e:
             if e.args[0] == "42S02":
                 continue
             else:
                 print(
-                    f"Error al extraer detalle de ventas para el vendedor {carpeta}: {e}"
+                    f"Error al extraer detalle de compras para el vendedor {carpeta}: {e}"
                 )
 
-    return detalle_ventas
+    return detalle_compras
 
 
 # Transform
-def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
+def clean_detalle_compras(detalle_compras: Dict[str, List[Dict[str, str]]]):
     productos = None
     lotes = None
 
@@ -84,9 +84,9 @@ def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
 
             lotes = {lote["lote"]: lote["id"] for lote in result}
 
-    cleaned_detalle_ventas = []
+    cleaned_detalle_compras = []
 
-    ERRORS_CSV_PATH = "errores_detalle_ventas.csv"
+    ERRORS_CSV_PATH = "errores_detalle_compras.csv"
 
     def log_error(id_correlativo, codigo_vendedor, codigo_producto, razon):
         with open(ERRORS_CSV_PATH, mode="a", newline="", encoding="utf-8") as csvfile:
@@ -106,8 +106,8 @@ def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
                 ]
             )
 
-    for codigo_vendedor, detalle_ventas_vendedor in detalle_ventas.items():
-        ventas_vendedor = None
+    for codigo_vendedor, detalle_compras_vendedor in detalle_compras.items():
+        compras_vendedor = None
         almacenes_vendedor = None
 
         with MARIADB_CONNECTION as connection:
@@ -132,7 +132,7 @@ def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
                     )
 
                 select_query = """
-                    SELECT id, id_correlativo FROM ventas WHERE vendedor_id = %s
+                    SELECT id, id_correlativo FROM compras WHERE vendedor_id = %s
                 """
 
                 db_cursor.execute(
@@ -142,8 +142,8 @@ def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
 
                 result = db_cursor.fetchall()
 
-                ventas_vendedor = {
-                    venta["id_correlativo"]: venta["id"] for venta in result
+                compras_vendedor = {
+                    compra["id_correlativo"]: compra["id"] for compra in result
                 }
 
                 select_query = """
@@ -159,17 +159,17 @@ def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
                     almacen["codigo"]: almacen["id"] for almacen in result
                 }
 
-        for detalle in detalle_ventas_vendedor:
-            id_correlativo = detalle["numtrans"]
+        for detalle in detalle_compras_vendedor:
+            id_correlativo = int(detalle["numtrans"])
 
-            venta_id = ventas_vendedor.get(id_correlativo, None)
+            compra_id = compras_vendedor.get(id_correlativo, None)
 
-            if not venta_id:
+            if not compra_id:
                 log_error(
                     id_correlativo,
                     codigo_vendedor,
                     "",
-                    "venta no encontrada",
+                    "compra no encontrada",
                 )
                 continue
 
@@ -201,7 +201,7 @@ def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
             lote_id = lotes.get(codigo_lote, None)
 
             cleaned_detalle = {
-                "venta_id": venta_id,
+                "compra_id": compra_id,
                 "producto_id": producto_id,
                 "almacen_id": almacen_id,
                 "lote_id": lote_id,
@@ -209,58 +209,58 @@ def clean_detalle_ventas(detalle_ventas: Dict[str, List[Dict[str, str]]]):
                 "precio_unitario": detalle["punit"],
             }
 
-            cleaned_detalle_ventas.append(cleaned_detalle)
+            cleaned_detalle_compras.append(cleaned_detalle)
 
-    return cleaned_detalle_ventas
+    return cleaned_detalle_compras
 
 
 # Load
-def load_detalle_ventas(detalle_ventas: List[Dict[str, str]]):
+def load_detalle_compras(detalle_compras: List[Dict[str, str]]):
     with MARIADB_CONNECTION as connection:
         connection.connect()
 
         with connection.cursor() as db_cursor:
             try:
                 insert_query = """
-                INSERT INTO detalle_venta (venta_id, almacen_id, producto_id, cantidad, precio_unitario, lote_id)
+                INSERT INTO detalle_compra (compra_id, almacen_id, producto_id, cantidad, precio_unitario, lote_id)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """
 
                 # Preparar todos los datos en una lista de tuplas
                 data_to_insert = [
                     (
-                        detalle["venta_id"],
+                        detalle["compra_id"],
                         detalle["almacen_id"],
                         detalle["producto_id"],
                         detalle["cantidad"],
                         detalle["precio_unitario"],
                         detalle["lote_id"],
                     )
-                    for detalle in detalle_ventas
+                    for detalle in detalle_compras
                 ]
 
                 # Usar executemany para insertar todos los registros de una vez
                 db_cursor.executemany(insert_query, data_to_insert)
 
             except Exception as e:
-                print(f"Error al cargar el detalle de ventas: {e}")
+                print(f"Error al cargar el detalle de compras: {e}")
                 connection.rollback()
 
             finally:
                 connection.commit()
 
 
-def etl_detalle_ventas():
+def etl_detalle_compras():
     print("=" * 50)
-    print("Iniciando proceso ETL para Detalle de Ventas...")
+    print("Iniciando proceso ETL para Detalle de Compras...")
 
-    print("Extrayendo datos de detalle de ventas...")
-    detalle_ventas = get_detalle_ventas()
+    print("Extrayendo datos de detalle de compras...")
+    detalle_compras = get_detalle_compras()
 
-    print("Transformando datos de detalle de ventas...")
-    cleaned_detalle_ventas = clean_detalle_ventas(detalle_ventas)
+    print("Transformando datos de detalle de compras...")
+    cleaned_detalle_compras = clean_detalle_compras(detalle_compras)
 
-    print("Cargando datos de detalle de ventas en la base de datos de destino...")
-    load_detalle_ventas(cleaned_detalle_ventas)
+    print("Cargando datos de detalle de compras en la base de datos de destino...")
+    load_detalle_compras(cleaned_detalle_compras)
 
-    print("Proceso ETL para Detalle de Ventas completado.")
+    print("Proceso ETL para Detalle de Compras completado.")

@@ -81,10 +81,11 @@ model Producto {
   updatedAt DateTime @updatedAt @map("updated_at") @default(now())
 
   // Relaciones
-  grupo         GrupoProducto  @relation(fields: [grupoId], references: [id])
-  marca         MarcaProducto  @relation(fields: [marcaId], references: [id])
-  lotes         LoteProducto[]
-  detalleVentas DetalleVenta[]
+  grupo          GrupoProducto   @relation(fields: [grupoId], references: [id])
+  marca          MarcaProducto   @relation(fields: [marcaId], references: [id])
+  lotes          LoteProducto[]
+  detalleVentas  DetalleVenta[]
+  detalleCompras DetalleCompra[]
 
   @@map("productos")
 }
@@ -102,6 +103,7 @@ model LoteProducto {
   // Relaciones
   producto      Producto       @relation(fields: [productoId], references: [id])
   detalleVentas DetalleVenta[]
+  detalleCompras DetalleCompra[]
 
   @@map("lotes_producto")
 }
@@ -152,8 +154,9 @@ model Almacen {
   vendedorId  Int    @map("vendedor_id")
 
   // Relaciones
-  vendedor      Vendedor       @relation(fields: [vendedorId], references: [id])
-  detalleVentas DetalleVenta[]
+  vendedor       Vendedor        @relation(fields: [vendedorId], references: [id])
+  detalleVentas  DetalleVenta[]
+  detalleCompras DetalleCompra[]
 
   @@map("almacenes")
   @@unique([codigo, vendedorId])
@@ -281,8 +284,27 @@ model Compra {
   neto           Float
 
   // Relaciones
-  proveedor   Proveedor    @relation(fields: [proveedorId], references: [id])
-  vendedor    Vendedor     @relation(fields: [vendedorId], references: [id])
+  proveedor      Proveedor       @relation(fields: [proveedorId], references: [id])
+  vendedor       Vendedor        @relation(fields: [vendedorId], references: [id])
+  detalleCompras DetalleCompra[]
 
   @@map("compras")
+}
+
+model DetalleCompra {
+  id            Int   @id @default(autoincrement())
+  compraId      Int   @map("compra_id")
+  almacenId     Int   @map("almacen_id")
+  productoId    Int   @map("producto_id")
+  cantidad      Int
+  costoUnitario Float @map("costo_unitario")
+  loteId       Int?  @map("lote_id")
+
+  // Relaciones
+  compra   Compra   @relation(fields: [compraId], references: [id])
+  almacen  Almacen  @relation(fields: [almacenId], references: [id])
+  producto Producto @relation(fields: [productoId], references: [id])
+  lote     LoteProducto? @relation(fields: [loteId], references: [id])
+
+  @@map("detalle_compra")
 }

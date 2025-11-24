@@ -2,10 +2,13 @@ from etl_process.almacenes import etl_almacenes
 from etl_process.billeteras import etl_billeteras
 from etl_process.clientes import etl_clientes
 from etl_process.comisiones import etl_comisiones
+from etl_process.compras.compras import etl_compras
+from etl_process.compras.detalle_compras import etl_detalle_compras
 from etl_process.lotes import etl_lotes
 from etl_process.productos.grupos import etl_grupos
 from etl_process.productos.marcas import etl_marcas
 from etl_process.productos.productos import etl_productos
+from etl_process.proveedores import etl_proveedores
 from etl_process.vendedores import etl_vendedores
 from etl_process.ventas.detalle_ventas import etl_detalle_ventas
 from etl_process.ventas.ventas import etl_ventas
@@ -21,6 +24,9 @@ if __name__ == "__main__":
     print_spacer()
 
     etl_vendedores()
+    print_spacer()
+
+    etl_proveedores()
     print_spacer()
 
     etl_zonas()
@@ -51,4 +57,10 @@ if __name__ == "__main__":
     print_spacer()
 
     etl_detalle_ventas()
+    print_spacer()
+
+    etl_compras()
+    print_spacer()
+
+    etl_detalle_compras()
     print_spacer()
