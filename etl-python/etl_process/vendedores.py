@@ -107,6 +107,8 @@ def clean_vendedores(vendedores: List[Dict[str, str]]):
 # Load
 def load_vendedores(vendedores: List[Dict[str, str]]):
     with MARIADB_CONNECTION as connection:
+        connection.connect()
+
         with connection.cursor() as db_cursor:
             try:
                 for vendedor in vendedores:
@@ -123,18 +125,16 @@ def load_vendedores(vendedores: List[Dict[str, str]]):
                         (codigo, nombre),
                     )
 
-                    print(f"Vendedor {codigo} - {nombre} cargado correctamente.")
-
             except Exception as e:
                 print(f"Error al cargar vendedores: {e}")
                 connection.rollback()
 
             finally:
                 connection.commit()
-                db_cursor.close()
 
 
 def etl_vendedores():
+    print("=" * 50)
     print("Iniciando proceso ETL para vendedores...")
 
     print("Extrayendo datos de vendedores...")
@@ -145,3 +145,5 @@ def etl_vendedores():
 
     print("Cargando datos de vendedores en la base de datos destino...")
     load_vendedores(vendedores_clean)
+
+    print("Proceso ETL para vendedores completado.")
