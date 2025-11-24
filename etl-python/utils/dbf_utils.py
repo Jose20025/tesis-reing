@@ -8,11 +8,12 @@ from pyodbc import Cursor
 from utils.convert_utils import convert_to_json_dict, convert_to_json_list
 
 
-def create_conn(connstring: str) -> pyodbc.Connection:
-    conn = pyodbc.connect(connstring, autocommit=False)
-    conn.setencoding(encoding="latin1")
-    conn.autocommit = False
-    return conn
+def create_connection(connection_string: str) -> pyodbc.Connection:
+    connection = pyodbc.connect(connection_string, autocommit=False)
+    connection.setencoding(encoding="latin1")
+    connection.autocommit = False
+
+    return connection
 
 
 def get_dbf_connection_string():
