@@ -142,7 +142,7 @@ model DetalleVenta {
 
 model Almacen {
   id          Int    @id @default(autoincrement())
-  codigo      String @unique
+  codigo      String
   descripcion String
   vendedorId  Int    @map("vendedor_id")
 
@@ -151,6 +151,7 @@ model Almacen {
   detalleVentas DetalleVenta[]
 
   @@map("almacenes")
+  @@unique([codigo, vendedorId])
 }
 
 model Cliente {
@@ -170,7 +171,7 @@ model Cliente {
 
 model Billetera {
   id          Int        @id @default(autoincrement())
-  codigo      String     @unique
+  codigo      String     
   descripcion String
   moneda      MonedaEnum
   vendedorId  Int        @map("vendedor_id")
@@ -180,6 +181,7 @@ model Billetera {
   cobranzas Cobranza[]
 
   @@map("billeteras")
+  @@unique([codigo, vendedorId])
 }
 
 model MarcaProducto {
