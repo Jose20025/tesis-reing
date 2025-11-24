@@ -52,6 +52,7 @@ model Vendedor {
   codigo    String   @unique
   nombre    String
   isActivo  Boolean  @default(true) @map("is_activo")
+  comisionId Int     @map("comision_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at") @default(now())
 
@@ -61,6 +62,7 @@ model Vendedor {
   almacenes  Almacen[]
   billeteras Billetera[]
   cobranzas  Cobranza[]
+  comision   Comision @relation(fields: [comisionId], references: [id])
 
   @@map("vendedores")
 }
@@ -234,4 +236,21 @@ model Cobranza {
   vendedor  Vendedor  @relation(fields: [vendedorId], references: [id])
 
   @@map("cobranzas")
+}
+
+model Comision {
+  id         Int      @id @default(autoincrement())
+  codigo      String   @unique
+  descripcion String
+  periodo1 Int @map("periodo_1")
+  comision1 Float @map("comision_1")
+  periodo2 Int @map("periodo_2")
+  comision2 Float @map("comision_2")
+  periodo3 Int @map("periodo_3")
+  comision3 Float @map("comision_3")
+
+  // Relaciones
+  vendedores Vendedor[]
+
+  @@map("comisiones")
 }
