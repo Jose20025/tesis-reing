@@ -71,6 +71,9 @@ def clean_clientes(clientes: List[Dict[str, str]]):
         zona_id = zonas.get(codigo_zona, None)
 
         if not zona_id:
+            print(
+                f"Advertencia: La zona con código {codigo_zona} no existe en la base de datos destino para el cliente {codigo_cliente}. Se omite este cliente."
+            )
             continue
 
         cleaned_cliente = {

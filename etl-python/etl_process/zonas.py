@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List
 
 from db_destino import MARIADB_CONNECTION
@@ -12,10 +13,12 @@ def get_zonas():
     query = """
         SELECT z.*, c.nombre AS nombre_ciudad
         FROM DATAMASTER/zonas z
-        JOIN DATAMASTER/ciudad c ON z.ciudad = c.codigo
+        LEFT JOIN DATAMASTER/ciudad c ON z.ciudad = c.codigo
     """
 
     zonas = execute_query(cursor, query)
+
+    print(json.dumps(zonas, indent=4, ensure_ascii=False))
 
     return zonas
 
@@ -25,9 +28,15 @@ def clean_zonas(zonas: List[Dict[str, str]]):
     cleaned_zonas = []
 
     for zona in zonas:
-        nombre_ciudad = zona["nombre_ciudad"].strip().upper()
         codigo_zona = zona["codigo"].strip()
         nombre_zona = zona["nombre"].strip().upper()
+
+        nombre_ciudad = zona["nombre_ciudad"]
+
+        if nombre_ciudad:
+            nombre_ciudad = nombre_ciudad.strip().upper()
+        else:
+            nombre_ciudad = "SIN CIUDAD"
 
         if nombre_zona.startswith("*"):
             print(f"Zona con asterisco encontrada: {nombre_zona}")
