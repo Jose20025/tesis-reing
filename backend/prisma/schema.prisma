@@ -228,7 +228,8 @@ model Zona {
 
 model Pago {
   id            Int      @id @default(autoincrement())
-  ventaId       Int      @map("venta_id")
+  ventaId       Int?      @map("venta_id")
+  compraId      Int?     @map("compra_id")
   fecha         DateTime @default(now())
   importe       Float
   observaciones String?
@@ -238,7 +239,8 @@ model Pago {
   porcentajeComision Float @map("porcentaje_comision")
 
   // Relaciones
-  venta     Venta     @relation(fields: [ventaId], references: [id])
+  venta     Venta?     @relation(fields: [ventaId], references: [id])
+  compra    Compra?    @relation(fields: [compraId], references: [id])
   billetera Billetera @relation(fields: [billeteraId], references: [id])
   vendedor  Vendedor  @relation(fields: [vendedorId], references: [id])
 
@@ -288,6 +290,7 @@ model Compra {
   proveedor      Proveedor       @relation(fields: [proveedorId], references: [id])
   vendedor       Vendedor        @relation(fields: [vendedorId], references: [id])
   detalleCompras DetalleCompra[]
+  pagos    Pago[]
 
   @@map("compras")
 }

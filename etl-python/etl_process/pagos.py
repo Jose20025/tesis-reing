@@ -135,21 +135,26 @@ def clean_pagos(pagos: Dict[str, List[Dict[str, str]]]):
 
             tipo_transaccion = pago["tipotrans"].strip().upper()
             venta_id = None
+            compra_id = None
 
             if tipo_transaccion == "COM":
-                venta_id = compras_vendedor.get(id_correlativo, None)
+                compra_id = compras_vendedor.get(id_correlativo, None)
             else:
                 venta_id = ventas_vendedor.get(id_correlativo, None)
 
-            if not venta_id:
+            if not venta_id and not compra_id:
                 print(
-                    f"Advertencia: La venta con id_correlativo {id_correlativo} no existe para el vendedor {codigo_vendedor}. Se omite el pago."
+                    f"Advertencia: Ni la venta ni la compra con id_correlativo {id_correlativo} existen para el vendedor {codigo_vendedor}. Se omite el pago."
                 )
                 continue
 
             fecha = pago["fecha"]
             monto = float(pago["importe"])
+
             observaciones = pago["obs"].strip()
+            if observaciones == "":
+                observaciones = None
+
             recibo = pago["recibo"].strip()
 
             # TODO: Hacer la lógica para el cálculo de la comisión
@@ -166,6 +171,7 @@ def clean_pagos(pagos: Dict[str, List[Dict[str, str]]]):
 
             cleaned_pago = {
                 "venta_id": venta_id,
+                "compra_id": compra_id,
                 "fecha": fecha,
                 "importe": monto,
                 "observaciones": observaciones,
@@ -187,8 +193,8 @@ def load_pagos(pagos: List[Dict[str, str]]):
 
         with connection.cursor() as db_cursor:
             insert_query = """
-                INSERT INTO pagos (venta_id, fecha, importe, observaciones, billetera_id, recibo, vendedor_id, porcentaje_comision)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO pagos (venta_id, compra_id, fecha, importe, observaciones, billetera_id, recibo, vendedor_id, porcentaje_comision)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 
             for pago in pagos:
@@ -197,6 +203,7 @@ def load_pagos(pagos: List[Dict[str, str]]):
                         insert_query,
                         (
                             pago["venta_id"],
+                            pago["compra_id"],
                             pago["fecha"],
                             pago["importe"],
                             pago["observaciones"],
@@ -207,7 +214,9 @@ def load_pagos(pagos: List[Dict[str, str]]):
                         ),
                     )
                 except Exception as e:
-                    print(f"Error al insertar el pago {pago['venta_id']}: {e}")
+                    print(
+                        f"Error al insertar el pago {pago['venta_id']} o compra {pago['compra_id']}: {e}"
+                    )
         connection.commit()
 
 
