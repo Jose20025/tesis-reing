@@ -9,7 +9,7 @@ CREATE TABLE `clientes` (
 
     UNIQUE INDEX `clientes_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `zonas` (
@@ -20,7 +20,7 @@ CREATE TABLE `zonas` (
 
     UNIQUE INDEX `zonas_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- AddForeignKey
 ALTER TABLE `clientes` ADD CONSTRAINT `clientes_zona_id_fkey` FOREIGN KEY (`zona_id`) REFERENCES `zonas`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

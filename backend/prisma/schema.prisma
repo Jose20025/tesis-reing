@@ -157,8 +157,8 @@ model Cliente {
   id        Int    @id @default(autoincrement())
   codigo    String @unique
   nombre    String
-  direccion String
-  telefono  String
+  direccion String?
+  telefono  String?
   zonaId    Int    @map("zona_id")
 
   // Relaciones

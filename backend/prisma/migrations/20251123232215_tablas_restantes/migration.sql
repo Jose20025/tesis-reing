@@ -14,7 +14,7 @@ CREATE TABLE `usuarios` (
 
     UNIQUE INDEX `usuarios_username_key`(`username`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `vendedores` (
@@ -27,7 +27,7 @@ CREATE TABLE `vendedores` (
 
     UNIQUE INDEX `vendedores_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `productos` (
@@ -44,7 +44,7 @@ CREATE TABLE `productos` (
 
     UNIQUE INDEX `productos_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `lotes_producto` (
@@ -58,7 +58,7 @@ CREATE TABLE `lotes_producto` (
     `is_activo` BOOLEAN NOT NULL DEFAULT true,
 
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `ventas` (
@@ -72,7 +72,7 @@ CREATE TABLE `ventas` (
     `neto` DOUBLE NOT NULL,
 
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `detalle_venta` (
@@ -85,7 +85,7 @@ CREATE TABLE `detalle_venta` (
     `lote_id` INTEGER NULL,
 
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `almacenes` (
@@ -96,7 +96,7 @@ CREATE TABLE `almacenes` (
 
     UNIQUE INDEX `almacenes_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `billeteras` (
@@ -108,7 +108,7 @@ CREATE TABLE `billeteras` (
 
     UNIQUE INDEX `billeteras_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `marcas_producto` (
@@ -118,7 +118,7 @@ CREATE TABLE `marcas_producto` (
 
     UNIQUE INDEX `marcas_producto_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `grupos_producto` (
@@ -128,7 +128,7 @@ CREATE TABLE `grupos_producto` (
 
     UNIQUE INDEX `grupos_producto_codigo_key`(`codigo`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- CreateTable
 CREATE TABLE `cobranzas` (
@@ -142,7 +142,7 @@ CREATE TABLE `cobranzas` (
     `vendedor_id` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- AddForeignKey
 ALTER TABLE `usuarios` ADD CONSTRAINT `usuarios_vendedor_id_fkey` FOREIGN KEY (`vendedor_id`) REFERENCES `vendedores`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
