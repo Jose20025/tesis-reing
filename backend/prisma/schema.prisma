@@ -61,7 +61,7 @@ model Vendedor {
   ventas     Venta[]
   almacenes  Almacen[]
   billeteras Billetera[]
-  cobranzas  Cobranza[]
+  pagos  Pago[]
   comision   Comision @relation(fields: [comisionId], references: [id])
   compras    Compra[]
 
@@ -123,7 +123,7 @@ model Venta {
   cliente       Cliente        @relation(fields: [clienteId], references: [id])
   vendedor      Vendedor       @relation(fields: [vendedorId], references: [id])
   detalleVentas DetalleVenta[]
-  cobranzas     Cobranza[]
+  pagos     Pago[]
 
   @@map("ventas")
   @@index([vendedorId, idCorrelativo])
@@ -186,7 +186,7 @@ model Billetera {
 
   // Relaciones
   vendedor  Vendedor   @relation(fields: [vendedorId], references: [id])
-  cobranzas Cobranza[]
+  pagos Pago[]
 
   @@map("billeteras")
   @@unique([codigo, vendedorId])
@@ -226,7 +226,7 @@ model Zona {
   @@map("zonas")
 }
 
-model Cobranza {
+model Pago {
   id            Int      @id @default(autoincrement())
   ventaId       Int      @map("venta_id")
   fecha         DateTime @default(now())
@@ -242,7 +242,7 @@ model Cobranza {
   billetera Billetera @relation(fields: [billeteraId], references: [id])
   vendedor  Vendedor  @relation(fields: [vendedorId], references: [id])
 
-  @@map("cobranzas")
+  @@map("pagos")
 }
 
 model Comision {

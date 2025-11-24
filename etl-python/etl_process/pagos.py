@@ -13,12 +13,12 @@ from utils.dbf_utils import (
 
 
 # Extract
-def get_cobranzas():
+def get_pagos():
     dbf_connection_string = get_dbf_connection_string(False)
     connection = create_connection(dbf_connection_string)
     cursor = connection.cursor()
 
-    cobranzas = dict()
+    pagos = dict()
 
     for vendedor in VENDEDORES:
         try:
@@ -28,6 +28,7 @@ def get_cobranzas():
 
             query = f"""
                 SELECT numtrans,
+                tipotrans,
                 fecha,
                 importe,
                 banco,
@@ -38,19 +39,19 @@ def get_cobranzas():
 
             resultado = execute_query(cursor, query)
 
-            cobranzas[codigo_vendedor] = resultado
+            pagos[codigo_vendedor] = resultado
 
         except pyodbc.ProgrammingError as e:
             if e.args[0] == "42S02":
                 continue
             else:
-                print(f"Error al extraer cobranzas para el vendedor {carpeta}: {e}")
+                print(f"Error al extraer pagos para el vendedor {carpeta}: {e}")
 
-    return cobranzas
+    return pagos
 
 
 # Transform
-def clean_cobranzas(cobranzas: Dict[str, List[Dict[str, str]]]):
+def clean_pagos(pagos: Dict[str, List[Dict[str, str]]]):
     vendedores = None
 
     with MARIADB_CONNECTION as connection:
@@ -68,18 +69,19 @@ def clean_cobranzas(cobranzas: Dict[str, List[Dict[str, str]]]):
 
             vendedores = {vendedor["codigo"]: vendedor["id"] for vendedor in result}
 
-    cleaned_cobranzas = list()
+    cleaned_pagos = list()
 
-    for codigo_vendedor, cobranzas_vendedor in cobranzas.items():
+    for codigo_vendedor, pagos_vendedor in pagos.items():
         vendedor_id = vendedores.get(codigo_vendedor, None)
 
         if not vendedor_id:
             print(
-                f"Advertencia: El vendedor con código {codigo_vendedor} no existe en la base de datos destino. Se omiten sus cobranzas."
+                f"Advertencia: El vendedor con código {codigo_vendedor} no existe en la base de datos destino. Se omiten sus pagos."
             )
             continue
 
         ventas_vendedor = None
+        compras_vendedor = None
         billeteras_vendedor = None
 
         with MARIADB_CONNECTION as connection:
@@ -101,6 +103,20 @@ def clean_cobranzas(cobranzas: Dict[str, List[Dict[str, str]]]):
                 }
 
                 select_query = """
+                    SELECT id, id_correlativo FROM compras WHERE vendedor_id = %s
+                    """
+
+                db_cursor.execute(
+                    select_query,
+                    (vendedor_id,),
+                )
+                result = db_cursor.fetchall()
+
+                compras_vendedor = {
+                    compra["id_correlativo"]: compra["id"] for compra in result
+                }
+
+                select_query = """
                     SELECT id, codigo FROM billeteras WHERE vendedor_id = %s
                     """
 
@@ -114,34 +130,41 @@ def clean_cobranzas(cobranzas: Dict[str, List[Dict[str, str]]]):
                     billetera["codigo"]: billetera["id"] for billetera in result
                 }
 
-        for cobranza in cobranzas_vendedor:
-            id_correlativo = int(cobranza["numtrans"])
-            venta_id = ventas_vendedor.get(id_correlativo, None)
+        for pago in pagos_vendedor:
+            id_correlativo = int(pago["numtrans"])
+
+            tipo_transaccion = pago["tipotrans"].strip().upper()
+            venta_id = None
+
+            if tipo_transaccion == "COM":
+                venta_id = compras_vendedor.get(id_correlativo, None)
+            else:
+                venta_id = ventas_vendedor.get(id_correlativo, None)
 
             if not venta_id:
                 print(
-                    f"Advertencia: La venta con id_correlativo {id_correlativo} no existe para el vendedor {codigo_vendedor}. Se omite la cobranza."
+                    f"Advertencia: La venta con id_correlativo {id_correlativo} no existe para el vendedor {codigo_vendedor}. Se omite el pago."
                 )
                 continue
 
-            fecha = cobranza["fecha"]
-            monto = float(cobranza["importe"])
-            observaciones = cobranza["obs"].strip()
-            recibo = cobranza["recibo"].strip()
+            fecha = pago["fecha"]
+            monto = float(pago["importe"])
+            observaciones = pago["obs"].strip()
+            recibo = pago["recibo"].strip()
 
             # TODO: Hacer la lógica para el cálculo de la comisión
             porcentaje_comision = 8.0
 
-            codigo_billetera = cobranza["banco"].strip().upper()
+            codigo_billetera = pago["banco"].strip().upper()
             billetera_id = billeteras_vendedor.get(codigo_billetera, None)
 
             if not billetera_id:
                 print(
-                    f"Advertencia: La billetera con código {codigo_billetera} no existe para el vendedor {codigo_vendedor}. Se omite la cobranza."
+                    f"Advertencia: La billetera con código {codigo_billetera} no existe para el vendedor {codigo_vendedor}. Se omite el pago."
                 )
                 continue
 
-            cleaned_cobranza = {
+            cleaned_pago = {
                 "venta_id": venta_id,
                 "fecha": fecha,
                 "importe": monto,
@@ -152,53 +175,53 @@ def clean_cobranzas(cobranzas: Dict[str, List[Dict[str, str]]]):
                 "porcentaje_comision": porcentaje_comision,
             }
 
-            cleaned_cobranzas.append(cleaned_cobranza)
+            cleaned_pagos.append(cleaned_pago)
 
-    return cleaned_cobranzas
+    return cleaned_pagos
 
 
 # Load
-def load_cobranzas(cobranzas: List[Dict[str, str]]):
+def load_pagos(pagos: List[Dict[str, str]]):
     with MARIADB_CONNECTION as connection:
         connection.connect()
 
         with connection.cursor() as db_cursor:
             insert_query = """
-                INSERT INTO cobranzas (venta_id, fecha, importe, observaciones, billetera_id, recibo, vendedor_id, porcentaje_comision)
+                INSERT INTO pagos (venta_id, fecha, importe, observaciones, billetera_id, recibo, vendedor_id, porcentaje_comision)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
 
-            for cobranza in cobranzas:
+            for pago in pagos:
                 try:
                     db_cursor.execute(
                         insert_query,
                         (
-                            cobranza["venta_id"],
-                            cobranza["fecha"],
-                            cobranza["importe"],
-                            cobranza["observaciones"],
-                            cobranza["billetera_id"],
-                            cobranza["recibo"],
-                            cobranza["vendedor_id"],
-                            cobranza["porcentaje_comision"],
+                            pago["venta_id"],
+                            pago["fecha"],
+                            pago["importe"],
+                            pago["observaciones"],
+                            pago["billetera_id"],
+                            pago["recibo"],
+                            pago["vendedor_id"],
+                            pago["porcentaje_comision"],
                         ),
                     )
                 except Exception as e:
-                    print(f"Error al insertar la cobranza {cobranza['venta_id']}: {e}")
+                    print(f"Error al insertar el pago {pago['venta_id']}: {e}")
         connection.commit()
 
 
-def etl_cobranzas():
+def etl_pagos():
     print("=" * 50)
-    print("Iniciando proceso ETL para Cobranzas...")
+    print("Iniciando proceso ETL para Pagos...")
 
-    print("Extrayendo datos de cobranzas...")
-    cobranzas = get_cobranzas()
+    print("Extrayendo datos de pagos...")
+    pagos = get_pagos()
 
-    print("Transformando datos de cobranzas...")
-    cleaned_cobranzas = clean_cobranzas(cobranzas)
+    print("Transformando datos de pagos...")
+    cleaned_pagos = clean_pagos(pagos)
 
-    print("Cargando datos de cobranzas en la base de datos de destino...")
-    load_cobranzas(cleaned_cobranzas)
+    print("Cargando datos de pagos en la base de datos de destino...")
+    load_pagos(cleaned_pagos)
 
-    print("Proceso ETL para Cobranzas completado.")
+    print("Proceso ETL para Pagos completado.")

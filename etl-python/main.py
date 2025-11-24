@@ -1,11 +1,11 @@
 from etl_process.almacenes import etl_almacenes
 from etl_process.billeteras import etl_billeteras
 from etl_process.clientes import etl_clientes
-from etl_process.cobranzas import etl_cobranzas
 from etl_process.comisiones import etl_comisiones
 from etl_process.compras.compras import etl_compras
 from etl_process.compras.detalle_compras import etl_detalle_compras
 from etl_process.lotes import etl_lotes
+from etl_process.pagos import etl_pagos
 from etl_process.productos.grupos import etl_grupos
 from etl_process.productos.marcas import etl_marcas
 from etl_process.productos.productos import etl_productos
@@ -66,5 +66,5 @@ if __name__ == "__main__":
     etl_detalle_compras()
     print_spacer()
 
-    etl_cobranzas()
+    etl_pagos()
     print_spacer()
