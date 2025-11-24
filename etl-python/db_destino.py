@@ -17,5 +17,10 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_NAME = os.getenv("DB_NAME", "test_db")
 
 MARIADB_CONNECTION = pymysql.connect(
-    host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME
+    host=DB_HOST,
+    user=DB_USER,
+    password=DB_PASSWORD,
+    database=DB_NAME,
+    charset="utf8mb4",
+    cursorclass=pymysql.cursors.DictCursor,
 )

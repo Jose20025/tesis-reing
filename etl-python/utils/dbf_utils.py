@@ -7,6 +7,10 @@ from pyodbc import Cursor
 
 from utils.convert_utils import convert_to_json_dict, convert_to_json_list
 
+load_dotenv()
+
+DBF_PATH = os.getenv("DBF_PATH", r"F:\CLONE_DBF")
+
 
 def create_connection(connection_string: str) -> pyodbc.Connection:
     connection = pyodbc.connect(connection_string, autocommit=False)
@@ -17,10 +21,7 @@ def create_connection(connection_string: str) -> pyodbc.Connection:
 
 
 def get_dbf_connection_string():
-    load_dotenv()
-    dbf_path = os.getenv("DBF_PATH", r"F:\CLONE_DBF")
-
-    return f"DRIVER=Microsoft Visual FoxPro Driver;SourceType=DBF;SourceDB={dbf_path};Exclusive=No;Collate=Machine;NULL=NO;DELETED=YES;BACKGROUNDFETCH=NO;"
+    return f"DRIVER=Microsoft Visual FoxPro Driver;SourceType=DBF;SourceDB={DBF_PATH};Exclusive=No;Collate=Machine;NULL=NO;DELETED=YES;BACKGROUNDFETCH=NO;"
 
 
 DBF_CONNECTION_STRING = get_dbf_connection_string()
