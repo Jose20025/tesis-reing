@@ -1,0 +1,235 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// 2. Enums
+
+enum TipoUsuarioEnum {
+  VENDEDOR
+  ADMINISTRADOR
+}
+
+enum TipoTransaccionEnum {
+  VCR
+  VCO
+}
+
+enum MonedaEnum {
+  BOLIVIANOS
+  DOLARES
+}
+
+// 3. Modelos (Tablas)
+
+model Usuario {
+  id         Int             @id @default(autoincrement())
+  nombre     String
+  username   String          @unique
+  password   String
+  vendedorId Int?            @map("vendedor_id")
+  isActivo   Boolean         @default(true) @map("is_activo")
+  tipo       TipoUsuarioEnum
+
+  // Relaciones
+  vendedor Vendedor? @relation(fields: [vendedorId], references: [id])
+
+  @@map("usuarios")
+}
+
+model Vendedor {
+  id        Int      @id @default(autoincrement())
+  codigo    String   @unique
+  nombre    String
+  isActivo  Boolean  @default(true) @map("is_activo")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones inversas
+  usuarios   Usuario[]
+  ventas     Venta[]
+  almacenes  Almacen[]
+  billeteras Billetera[]
+  cobranzas  Cobranza[]
+
+  @@map("vendedores")
+}
+
+model Producto {
+  id        Int      @id @default(autoincrement())
+  codigo    String   @unique
+  nombre    String
+  grupoId   Int      @map("grupo_id")
+  marcaId   Int      @map("marca_id")
+  costo     Float // O Decimal para mayor precisión financiera
+  precio    Float
+  isActivo  Boolean  @default(true) @map("is_activo")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  grupo         GrupoProducto  @relation(fields: [grupoId], references: [id])
+  marca         MarcaProducto  @relation(fields: [marcaId], references: [id])
+  lotes         LoteProducto[]
+  detalleVentas DetalleVenta[]
+
+  @@map("productos")
+}
+
+model LoteProducto {
+  id                Int      @id @default(autoincrement())
+  productoId        Int      @map("producto_id")
+  lote              String
+  cantidadImportada Int      @map("cantidad_importada")
+  fechaIngreso      DateTime @map("fecha_ingreso") @db.Date
+  mesVencimiento    Int      @map("mes_vencimiento")
+  yearVencimiento   Int      @map("year_vencimiento")
+  isActivo          Boolean  @default(true) @map("is_activo")
+
+  // Relaciones
+  producto      Producto       @relation(fields: [productoId], references: [id])
+  detalleVentas DetalleVenta[]
+
+  @@map("lotes_producto")
+}
+
+model Venta {
+  id              Int                 @id @default(autoincrement())
+  tipoTransaccion TipoTransaccionEnum @map("tipo_transaccion")
+  fecha           DateTime            @default(now())
+  clienteId       Int                 @map("cliente_id")
+  vendedorId      Int                 @map("vendedor_id")
+  total           Float
+  descuento       Float               @default(0)
+  neto            Float
+
+  // Relaciones
+  cliente       Cliente        @relation(fields: [clienteId], references: [id])
+  vendedor      Vendedor       @relation(fields: [vendedorId], references: [id])
+  detalleVentas DetalleVenta[]
+  cobranzas     Cobranza[]
+
+  @@map("ventas")
+}
+
+model DetalleVenta {
+  id             Int   @id @default(autoincrement())
+  ventaId        Int   @map("venta_id")
+  almacenId      Int   @map("almacen_id")
+  productoId     Int   @map("producto_id")
+  cantidad       Int
+  precioUnitario Float @map("precio_unitario")
+  loteId         Int?  @map("lote_id")
+
+  // Relaciones
+  venta    Venta         @relation(fields: [ventaId], references: [id])
+  almacen  Almacen       @relation(fields: [almacenId], references: [id])
+  producto Producto      @relation(fields: [productoId], references: [id])
+  lote     LoteProducto? @relation(fields: [loteId], references: [id])
+
+  @@map("detalle_venta")
+}
+
+model Almacen {
+  id          Int    @id @default(autoincrement())
+  codigo      String @unique
+  descripcion String
+  vendedorId  Int    @map("vendedor_id")
+
+  // Relaciones
+  vendedor      Vendedor       @relation(fields: [vendedorId], references: [id])
+  detalleVentas DetalleVenta[]
+
+  @@map("almacenes")
+}
+
+model Cliente {
+  id        Int    @id @default(autoincrement())
+  codigo    String @unique
+  nombre    String
+  direccion String
+  telefono  String
+  zonaId    Int    @map("zona_id")
+
+  // Relaciones
+  zona   Zona    @relation(fields: [zonaId], references: [id])
+  ventas Venta[]
+
+  @@map("clientes")
+}
+
+model Billetera {
+  id          Int        @id @default(autoincrement())
+  codigo      String     @unique
+  descripcion String
+  moneda      MonedaEnum
+  vendedorId  Int        @map("vendedor_id")
+
+  // Relaciones
+  vendedor  Vendedor   @relation(fields: [vendedorId], references: [id])
+  cobranzas Cobranza[]
+
+  @@map("billeteras")
+}
+
+model MarcaProducto {
+  id          Int    @id @default(autoincrement())
+  codigo      String @unique
+  descripcion String
+
+  // Relaciones inversas
+  productos Producto[]
+
+  @@map("marcas_producto")
+}
+
+model GrupoProducto {
+  id          Int    @id @default(autoincrement())
+  codigo      String @unique
+  descripcion String
+
+  // Relaciones inversas
+  productos Producto[]
+
+  @@map("grupos_producto")
+}
+
+model Zona {
+  id     Int    @id @default(autoincrement())
+  codigo String @unique
+  nombre String
+  ciudad String
+
+  // Relaciones inversas
+  clientes Cliente[]
+
+  @@map("zonas")
+}
+
+model Cobranza {
+  id            Int      @id @default(autoincrement())
+  ventaId       Int      @map("venta_id")
+  fecha         DateTime @default(now())
+  importe       Float
+  observaciones String?
+  billeteraId   Int      @map("billetera_id")
+  recibo        String?
+  vendedorId    Int      @map("vendedor_id")
+
+  // Relaciones
+  venta     Venta     @relation(fields: [ventaId], references: [id])
+  billetera Billetera @relation(fields: [billeteraId], references: [id])
+  vendedor  Vendedor  @relation(fields: [vendedorId], references: [id])
+
+  @@map("cobranzas")
+}
