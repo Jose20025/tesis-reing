@@ -124,6 +124,7 @@ model Venta {
   cobranzas     Cobranza[]
 
   @@map("ventas")
+  @@index([vendedorId, idCorrelativo])
 }
 
 model DetalleVenta {

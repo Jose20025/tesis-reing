@@ -86,6 +86,27 @@ def clean_ventas(ventas: Dict[str, List[Dict[str, str]]]):
     cleaned_ventas = []
 
     for codigo_vendedor, ventas_vendedor in ventas.items():
+        ERRORS_CSV_PATH = "errores_ventas.csv"
+
+        def log_error(id_correlativo, codigo_vendedor, codigo_cliente, razon):
+            with open(
+                ERRORS_CSV_PATH, mode="a", newline="", encoding="utf-8"
+            ) as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(
+                    [id_correlativo, codigo_vendedor, codigo_cliente, razon]
+                )
+
+        # Antes del loop principal, puedes agregar el encabezado si el archivo no existe
+        if not os.path.exists(ERRORS_CSV_PATH):
+            with open(
+                ERRORS_CSV_PATH, mode="w", newline="", encoding="utf-8"
+            ) as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(
+                    ["id_correlativo", "codigo_vendedor", "codigo_cliente", "razon"]
+                )
+
         for venta in ventas_vendedor:
             id_correlativo = int(venta["numtrans"])
             tipo_transaccion = venta["tipotrans"].strip().upper()
@@ -93,27 +114,6 @@ def clean_ventas(ventas: Dict[str, List[Dict[str, str]]]):
             total = float(venta["total"])
             descuento = float(venta["dcto"])
             neto = float(venta["neto"])
-
-            ERRORS_CSV_PATH = "errores_ventas.csv"
-
-            def log_error(id_correlativo, codigo_vendedor, codigo_cliente, razon):
-                with open(
-                    ERRORS_CSV_PATH, mode="a", newline="", encoding="utf-8"
-                ) as csvfile:
-                    writer = csv.writer(csvfile)
-                    writer.writerow(
-                        [id_correlativo, codigo_vendedor, codigo_cliente, razon]
-                    )
-
-            # Antes del loop principal, puedes agregar el encabezado si el archivo no existe
-            if not os.path.exists(ERRORS_CSV_PATH):
-                with open(
-                    ERRORS_CSV_PATH, mode="w", newline="", encoding="utf-8"
-                ) as csvfile:
-                    writer = csv.writer(csvfile)
-                    writer.writerow(
-                        ["id_correlativo", "codigo_vendedor", "codigo_cliente", "razon"]
-                    )
 
             if total == 0 or neto == 0:
                 continue
