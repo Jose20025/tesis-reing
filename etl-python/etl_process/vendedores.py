@@ -13,13 +13,37 @@ def get_vendedores():
 
 # Transform
 def clean_vendedores(vendedores: List[Dict[str, str]]):
-    vendedores_copy = vendedores.copy()
+    comision_id = None
 
-    for vendedor in vendedores_copy:
-        vendedor["codigo"] = vendedor["codigo"].strip().upper()
-        vendedor["nombre"] = vendedor["nombre"].strip().title()
+    with MARIADB_CONNECTION as connection:
+        connection.connect()
 
-    return vendedores_copy
+        with connection.cursor() as db_cursor:
+            select_query = """
+                SELECT id FROM comisiones
+                WHERE codigo = %s
+                """
+
+            db_cursor.execute(select_query, ("0016",))
+            result = db_cursor.fetchone()
+
+            comision_id = result["id"] if result else None
+
+    cleaned_vendedores = []
+
+    for vendedor in vendedores:
+        codigo = vendedor["codigo"].strip().upper()
+        nombre = vendedor["nombre"].strip().title()
+
+        cleaned_vendedor = {
+            "codigo": codigo,
+            "nombre": nombre,
+            "comision_id": comision_id,
+        }
+
+        cleaned_vendedores.append(cleaned_vendedor)
+
+    return cleaned_vendedores
 
 
 # Load
@@ -32,15 +56,16 @@ def load_vendedores(vendedores: List[Dict[str, str]]):
                 for vendedor in vendedores:
                     codigo = vendedor["codigo"]
                     nombre = vendedor["nombre"]
+                    comision_id = vendedor["comision_id"]
 
                     insert_query = """
-                        INSERT INTO vendedores (codigo, nombre)
-                        VALUES (%s, %s)
+                        INSERT INTO vendedores (codigo, nombre, comision_id)
+                        VALUES (%s, %s, %s)
                     """
 
                     db_cursor.execute(
                         insert_query,
-                        (codigo, nombre),
+                        (codigo, nombre, comision_id),
                     )
 
             except Exception as e:
