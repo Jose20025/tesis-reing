@@ -1,3 +1,4 @@
+from etl_process.vendedores import etl_vendedores
 from utils.dbf_utils import DBF_CONNECTION_STRING
 
 
@@ -6,4 +7,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    etl_vendedores()
