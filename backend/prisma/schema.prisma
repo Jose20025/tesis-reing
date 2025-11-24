@@ -235,6 +235,7 @@ model Cobranza {
   billeteraId   Int      @map("billetera_id")
   recibo        String?
   vendedorId    Int      @map("vendedor_id")
+  porcentajeComision Float @map("porcentaje_comision")
 
   // Relaciones
   venta     Venta     @relation(fields: [ventaId], references: [id])
