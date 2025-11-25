@@ -1,170 +1,227 @@
-@startuml ModeloLogicoCentralizado
+@startuml ModeloLogicoCompleto
 
-title Modelo lógico relacional - Módulo de vendedores
+title Modelo Lógico Relacional - Sistema Integral de Ventas y Cobranzas
 
+' ===== ENTIDADES DE USUARIOS Y VENDEDORES =====
 entity "usuarios" as usuarios {
-  * id
+  * id : INTEGER
   --
-  nombre
-  username
-  password
-  vendedor_id
-  is_activo
+  nombre : VARCHAR(100)
+  username : VARCHAR(50)
+  password : VARCHAR(255)
+  vendedor_id : INTEGER
+  is_activo : BOOLEAN
+  tipo : ENUM('VENDEDOR','ADMINISTRADOR')
 }
 
 entity "vendedores" as vendedores {
-  * id
+  * id : INTEGER
   --
-  codigo
-  nombre
-  is_activo
-  created_at
-  updated_at
+  codigo : VARCHAR(20)
+  nombre : VARCHAR(150)
+  departamento : VARCHAR(100)
+  is_activo : BOOLEAN
+  comision_id : INTEGER
+  created_at : DATETIME
+  updated_at : DATETIME
 }
 
+entity "comisiones" as comisiones {
+  * id : INTEGER
+  --
+  descripcion : VARCHAR(200)
+  periodo_1 : INTEGER
+  comision_1 : DECIMAL(5,2)
+  periodo_2 : INTEGER
+  comision_2 : DECIMAL(5,2)
+  periodo_3 : INTEGER
+  comision_3 : DECIMAL(5,2)
+}
+
+' ===== ENTIDADES DE PRODUCTOS =====
 entity "productos" as productos {
-  * id
+  * id : INTEGER
   --
-  codigo
-  nombre
-  grupo_id
-  marca_id
-  costo
-  precio
-  is_activo
-  created_at
-  updated_at
-}
-
-entity "lotes_producto" as lotes_producto {
-  * id
-  --
-  producto_id
-  lote
-  cantidad_importada
-  fecha_ingreso
-  mes_vencimiento
-  año_vencimiento
-  is_activo
-  created_at
-  updated_at
-}
-
-entity "venta" as venta {
-  * id
-  --
-  tipo_transaccion
-  fecha
-  cliente_id
-  vendedor_id
-  total
-  descuento
-  neto
-}
-
-entity "detalle_venta" as detalle_venta {
-  * id
-  --
-  venta_id
-  almacen_id
-  producto_id
-  cantidad
-  precio_unitario
-  lote_id
-}
-
-entity "almacenes" as almacenes {
-  * id
-  --
-  codigo
-  descripcion
-  vendedor_id
-}
-
-entity "clientes" as clientes {
-  * id
-  --
-  codigo
-  nombre
-  direccion
-  telefono
-  zona_id
-}
-
-entity "zonas" as zonas {
-  * id
-  --
-  codigo
-  nombre
-  ciudad
-}
-
-entity "billeteras" as billeteras {
-  * id
-  --
-  codigo
-  descripcion
-  moneda
-  vendedor_id
-}
-
-entity "cobranzas" as cobranzas {
-  * id
-  --
-  venta_id
-  fecha
-  importe
-  observaciones
-  billetera_id
-  recibo
-  vendedor_id
-}
-
-entity "marcas_producto" as marcas_producto {
-  * id
-  --
-  codigo
-  descripcion
+  codigo : VARCHAR(30)
+  nombre : VARCHAR(200)
+  grupo_id : INTEGER
+  marca_id : INTEGER
+  costo : DECIMAL(15,2)
+  precio : DECIMAL(15,2)
+  is_activo : BOOLEAN
+  created_at : DATETIME
+  updated_at : DATETIME
 }
 
 entity "grupos_producto" as grupos_producto {
-  * id
+  * id : INTEGER
   --
-  codigo
-  descripcion
+  codigo : VARCHAR(20)
+  descripcion : VARCHAR(150)
 }
 
-' Relación usuarios - vendedores
-usuarios }o--|| vendedores : "FK vendedor_id"
+entity "marcas_producto" as marcas_producto {
+  * id : INTEGER
+  --
+  codigo : VARCHAR(20)
+  descripcion : VARCHAR(150)
+}
 
-' Relaciones productos / catálogos
+entity "lotes_producto" as lotes_producto {
+  * id : INTEGER
+  --
+  producto_id : INTEGER
+  lote : VARCHAR(50)
+  cantidad_importada : INTEGER
+  fecha_ingreso : DATE
+  mes_vencimiento : INTEGER
+  año_vencimiento : INTEGER
+  is_activo : BOOLEAN
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+' ===== ENTIDADES DE CLIENTES Y UBICACIÓN =====
+entity "clientes" as clientes {
+  * id : INTEGER
+  --
+  codigo : VARCHAR(20)
+  nombre : VARCHAR(200)
+  direccion : VARCHAR(255)
+  telefono : VARCHAR(30)
+  zona_id : INTEGER
+}
+
+entity "zonas" as zonas {
+  * id : INTEGER
+  --
+  codigo : VARCHAR(20)
+  nombre : VARCHAR(150)
+  ciudad : VARCHAR(100)
+}
+
+' ===== ENTIDADES DE ALMACENES =====
+entity "almacenes" as almacenes {
+  * id : INTEGER
+  --
+  codigo : VARCHAR(20)
+  descripcion : VARCHAR(150)
+  vendedor_id : INTEGER
+}
+
+' ===== ENTIDADES DE VENTAS =====
+entity "ventas" as ventas {
+  * id : INTEGER
+  --
+  id_correlativo : INTEGER
+  tipo_transaccion : ENUM('VCR','VCO')
+  fecha : DATE
+  cliente_id : INTEGER
+  vendedor_id : INTEGER
+  total : DECIMAL(15,2)
+  descuento : DECIMAL(15,2)
+  neto : DECIMAL(15,2)
+}
+
+entity "detalle_venta" as detalle_venta {
+  * id : INTEGER
+  --
+  venta_id : INTEGER
+  almacen_id : INTEGER
+  producto_id : INTEGER
+  cantidad : INTEGER
+  precio_unitario : DECIMAL(15,2)
+  lote_id : INTEGER
+}
+
+' ===== ENTIDADES DE COMPRAS =====
+entity "proveedores" as proveedores {
+  * id : INTEGER
+  --
+  nombre : VARCHAR(200)
+  telefono : VARCHAR(30)
+}
+
+entity "compras" as compras {
+  * id : INTEGER
+  --
+  id_correlativo : INTEGER
+  fecha : DATE
+  proveedor_id : INTEGER
+  total : DECIMAL(15,2)
+  descuento : DECIMAL(15,2)
+  neto : DECIMAL(15,2)
+  vendedor_id : INTEGER
+}
+
+entity "detalle_compra" as detalle_compra {
+  * id : INTEGER
+  --
+  compra_id : INTEGER
+  almacen_id : INTEGER
+  producto_id : INTEGER
+  cantidad : INTEGER
+  costo_unitario : DECIMAL(15,2)
+}
+
+' ===== ENTIDADES DE COBRANZAS =====
+entity "billeteras" as billeteras {
+  * id : INTEGER
+  --
+  codigo : VARCHAR(20)
+  descripcion : VARCHAR(150)
+  moneda : ENUM('BOLIVIANOS','DOLARES')
+  vendedor_id : INTEGER
+}
+
+entity "cobranzas" as cobranzas {
+  * id : INTEGER
+  --
+  venta_id : INTEGER
+  fecha : DATE
+  importe : DECIMAL(15,2)
+  observaciones : VARCHAR(255)
+  billetera_id : INTEGER
+  recibo : VARCHAR(50)
+  vendedor_id : INTEGER
+  porcentaje_comision : DECIMAL(5,2)
+}
+
+' ===== RELACIONES (FOREIGN KEYS) =====
+
+' Usuarios y vendedores
+usuarios }o--|| vendedores : "FK vendedor_id"
+vendedores }o--|| comisiones : "FK comision_id"
+
+' Productos y catálogos
 productos }o--|| grupos_producto : "FK grupo_id"
 productos }o--|| marcas_producto : "FK marca_id"
-
-' Lotes
 lotes_producto }o--|| productos : "FK producto_id"
 
-' Ventas
-venta }o--|| clientes : "FK cliente_id"
-venta }o--|| vendedores : "FK vendedor_id"
+' Clientes y ubicación
+clientes }o--|| zonas : "FK zona_id"
 
-' Detalle de venta
-detalle_venta }o--|| venta : "FK venta_id"
+' Almacenes
+almacenes }o--|| vendedores : "FK vendedor_id"
+
+' Ventas
+ventas }o--|| clientes : "FK cliente_id"
+ventas }o--|| vendedores : "FK vendedor_id"
+detalle_venta }o--|| ventas : "FK venta_id"
 detalle_venta }o--|| almacenes : "FK almacen_id"
 detalle_venta }o--|| productos : "FK producto_id"
 detalle_venta }o--|| lotes_producto : "FK lote_id"
 
-' Clientes / zonas
-clientes }o--|| zonas : "FK zona_id"
-
-' Almacenes / vendedores
-almacenes }o--|| vendedores : "FK vendedor_id"
-
-' Billeteras / vendedores
-billeteras }o--|| vendedores : "FK vendedor_id"
+' Compras
+compras }o--|| proveedores : "FK proveedor_id"
+compras }o--|| vendedores : "FK vendedor_id"
+detalle_compra }o--|| compras : "FK compra_id"
+detalle_compra }o--|| almacenes : "FK almacen_id"
+detalle_compra }o--|| productos : "FK producto_id"
 
 ' Cobranzas
-cobranzas }o--|| venta : "FK venta_id"
+billeteras }o--|| vendedores : "FK vendedor_id"
+cobranzas }o--|| ventas : "FK venta_id"
 cobranzas }o--|| billeteras : "FK billetera_id"
 cobranzas }o--|| vendedores : "FK vendedor_id"
 

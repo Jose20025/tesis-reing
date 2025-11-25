@@ -1,0 +1,199 @@
+@startuml Modelo Lógico - Sistema de Ventas
+
+!define ENTITY class
+
+' Entidades con atributos lógicos
+ENTITY Usuario {
+  + id (PK)
+  nombre
+  username (UNIQUE)
+  password
+  tipo_usuario
+  is_activo
+  vendedor_id (FK)
+}
+
+ENTITY Vendedor {
+  + id (PK)
+  codigo (UNIQUE)
+  nombre
+  departamento
+  is_activo
+  comision_id (FK)
+  created_at
+  updated_at
+}
+
+ENTITY Comision {
+  + id (PK)
+  descripcion
+  periodo_1
+  comision_1
+  periodo_2
+  comision_2
+  periodo_3
+  comision_3
+}
+
+ENTITY Cliente {
+  + id (PK)
+  codigo (UNIQUE)
+  nombre
+  direccion
+  telefono
+  zona_id (FK)
+}
+
+ENTITY Zona {
+  + id (PK)
+  codigo (UNIQUE)
+  nombre
+  ciudad
+}
+
+ENTITY Producto {
+  + id (PK)
+  codigo (UNIQUE)
+  nombre
+  costo
+  precio
+  is_activo
+  grupo_id (FK)
+  marca_id (FK)
+  created_at
+  updated_at
+}
+
+ENTITY GrupoProducto {
+  + id (PK)
+  codigo (UNIQUE)
+  descripcion
+}
+
+ENTITY MarcaProducto {
+  + id (PK)
+  codigo (UNIQUE)
+  descripcion
+}
+
+ENTITY LoteProducto {
+  + id (PK)
+  lote
+  cantidad_importada
+  fecha_ingreso
+  mes_vencimiento
+  año_vencimiento
+  is_activo
+  producto_id (FK)
+  created_at
+  updated_at
+}
+
+ENTITY Almacen {
+  + id (PK)
+  codigo (UNIQUE)
+  descripcion
+  vendedor_id (FK)
+}
+
+ENTITY Venta {
+  + id (PK)
+  id_correlativo
+  tipo_transaccion
+  fecha
+  total
+  descuento
+  neto
+  cliente_id (FK)
+  vendedor_id (FK)
+}
+
+ENTITY DetalleVenta {
+  + id (PK)
+  cantidad
+  precio_unitario
+  venta_id (FK)
+  almacen_id (FK)
+  producto_id (FK)
+  lote_id (FK)
+}
+
+ENTITY Proveedor {
+  + id (PK)
+  nombre
+  telefono
+}
+
+ENTITY Compra {
+  + id (PK)
+  id_correlativo
+  fecha
+  total
+  descuento
+  neto
+  proveedor_id (FK)
+  vendedor_id (FK)
+}
+
+ENTITY DetalleCompra {
+  + id (PK)
+  cantidad
+  costo_unitario
+  compra_id (FK)
+  almacen_id (FK)
+  producto_id (FK)
+}
+
+ENTITY Billetera {
+  + id (PK)
+  codigo (UNIQUE)
+  descripcion
+  moneda
+  vendedor_id (FK)
+}
+
+ENTITY Cobranza {
+  + id (PK)
+  fecha
+  importe
+  observaciones
+  recibo
+  porcentaje_comision
+  venta_id (FK)
+  billetera_id (FK)
+  vendedor_id (FK)
+}
+
+' Relaciones con cardinalidad
+Usuario ||--o{ Vendedor : "1:0..1"
+Vendedor ||--o{ Comision : "N:1"
+
+Cliente ||--o{ Zona : "N:1"
+Cliente ||--o{ Venta : "1:N"
+
+Producto ||--o{ GrupoProducto : "N:1"
+Producto ||--o{ MarcaProducto : "N:1"
+Producto ||--o{ LoteProducto : "1:N"
+
+Vendedor ||--o{ Venta : "1:N"
+Venta ||--o{ DetalleVenta : "1:N"
+
+DetalleVenta ||--o{ Almacen : "N:1"
+DetalleVenta ||--o{ Producto : "N:1"
+DetalleVenta ||--o{ LoteProducto : "N:1"
+
+Proveedor ||--o{ Compra : "1:N"
+Vendedor ||--o{ Compra : "1:N"
+Compra ||--o{ DetalleCompra : "1:N"
+
+DetalleCompra ||--o{ Almacen : "N:1"
+DetalleCompra ||--o{ Producto : "N:1"
+
+Vendedor ||--o{ Almacen : "1:N"
+Vendedor ||--o{ Billetera : "1:N"
+
+Venta ||--o{ Cobranza : "1:N"
+Billetera ||--o{ Cobranza : "1:N"
+Vendedor ||--o{ Cobranza : "1:N"
+
+@enduml

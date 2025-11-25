@@ -1,0 +1,107 @@
+@startuml Modelo Conceptual - Sistema de Ventas
+
+!define ENTITY class
+
+' Entidades conceptuales principales
+ENTITY Usuario {
+  identificador
+  nombre
+  credenciales_acceso
+  tipo_usuario
+  estado
+}
+
+ENTITY Vendedor {
+  codigo
+  informacion_personal
+  departamento_trabajo
+  fecha_registro
+  estado
+}
+
+ENTITY Cliente {
+  codigo_cliente
+  informacion_personal
+  datos_contacto
+  ubicacion
+}
+
+ENTITY Producto {
+  codigo_producto
+  informacion_basica
+  clasificacion
+  precios
+  estado
+}
+
+ENTITY Venta {
+  numero_venta
+  fecha_transaccion
+  tipo_operacion
+  montos
+}
+
+ENTITY Compra {
+  numero_compra
+  fecha_transaccion
+  montos
+}
+
+ENTITY Inventario {
+  ubicacion_almacenamiento
+  control_stock
+  informacion_lotes
+}
+
+ENTITY Proveedor {
+  informacion_empresa
+  datos_contacto
+}
+
+ENTITY Cobranza {
+  informacion_pago
+  fecha_cobro
+  detalles_transaccion
+}
+
+ENTITY SistemaComisiones {
+  estructura_comisiones
+  periodos_calculo
+  porcentajes
+}
+
+ENTITY ZonaGeografica {
+  codigo_zona
+  ubicacion
+  descripcion
+}
+
+ENTITY BilleteraElectronica {
+  codigo_billetera
+  tipo_moneda
+  informacion_cuenta
+}
+
+' Relaciones conceptuales
+Usuario -- Vendedor : "puede ser"
+Vendedor -- SistemaComisiones : "tiene asignado"
+Vendedor -- Venta : "realiza"
+Vendedor -- Compra : "gestiona"
+Vendedor -- Inventario : "administra"
+Vendedor -- BilleteraElectronica : "maneja"
+Vendedor -- Cobranza : "ejecuta"
+
+Cliente -- ZonaGeografica : "pertenece a"
+Cliente -- Venta : "participa en"
+Cliente -- Cobranza : "realiza pago"
+
+Producto -- Inventario : "se almacena en"
+Producto -- Venta : "se vende en"
+Producto -- Compra : "se adquiere en"
+
+Proveedor -- Compra : "suministra"
+
+Venta -- Cobranza : "genera"
+BilleteraElectronica -- Cobranza : "recibe"
+
+@enduml

@@ -1,0 +1,242 @@
+@startuml Diagrama de Clases - Sistema de Ventas
+
+!define ENTITY class
+!define ENUM enum
+
+' Enumeraciones
+ENUM TipoUsuarioEnum {
+  VENDEDOR
+  ADMINISTRADOR
+}
+
+ENUM TipoTransaccionEnum {
+  VCR
+  VCO
+}
+
+ENUM MonedaEnum {
+  BOLIVIANOS
+  DOLARES
+}
+
+' Clases principales
+ENTITY Usuario {
+  -id: int
+  -nombre: string
+  -username: string
+  -password: string
+  -vendedor_id: int
+  -is_activo: bool
+  -tipo: TipoUsuarioEnum
+  +login(): bool
+  +logout(): void
+  +cambiarPassword(): bool
+}
+
+ENTITY Vendedor {
+  -id: int
+  -codigo: string
+  -nombre: string
+  -departamento: string
+  -is_activo: bool
+  -comision_id: int
+  -created_at: datetime
+  -updated_at: datetime
+  +calcularComision(): float
+  +asignarAlmacen(): void
+  +realizarVenta(): Venta
+}
+
+ENTITY Comision {
+  -id: int
+  -descripcion: string
+  -periodo_1: int
+  -comision_1: float
+  -periodo_2: int
+  -comision_2: float
+  -periodo_3: int
+  -comision_3: float
+  +calcularComisionPorPeriodo(dias: int): float
+}
+
+ENTITY Producto {
+  -id: int
+  -codigo: string
+  -nombre: string
+  -grupo_id: int
+  -marca_id: int
+  -costo: number
+  -precio: number
+  -is_activo: bool
+  -created_at: datetime
+  -updated_at: datetime
+  +actualizarPrecio(): void
+  +verificarStock(): int
+}
+
+ENTITY LoteProducto {
+  -id: int
+  -producto_id: int
+  -lote: string
+  -cantidad_importada: int
+  -fecha_ingreso: date
+  -mes_vencimiento: int
+  -año_vencimiento: int
+  -is_activo: bool
+  -created_at: datetime
+  -updated_at: datetime
+  +verificarVencimiento(): bool
+  +actualizarStock(): void
+}
+
+ENTITY GrupoProducto {
+  -id: int
+  -codigo: string
+  -descripcion: string
+}
+
+ENTITY MarcaProducto {
+  -id: int
+  -codigo: string
+  -descripcion: string
+}
+
+ENTITY Cliente {
+  -id: int
+  -codigo: string
+  -nombre: string
+  -direccion: string
+  -telefono: string
+  -zona_id: int
+  +actualizarDatos(): void
+  +obtenerHistorialCompras(): List<Venta>
+}
+
+ENTITY Zona {
+  -id: int
+  -codigo: string
+  -nombre: string
+  -ciudad: string
+}
+
+ENTITY Venta {
+  -id: int
+  -id_correlativo: int
+  -tipo_transaccion: TipoTransaccionEnum
+  -fecha: date
+  -cliente_id: int
+  -vendedor_id: int
+  -total: float
+  -descuento: float
+  -neto: float
+  +calcularTotal(): float
+  +aplicarDescuento(): void
+  +confirmarVenta(): bool
+}
+
+ENTITY DetalleVenta {
+  -id: int
+  -venta_id: int
+  -almacen_id: int
+  -producto_id: int
+  -cantidad: int
+  -precio_unitario: float
+  -lote_id: int
+  +calcularSubtotal(): float
+}
+
+ENTITY Almacen {
+  -id: int
+  -codigo: string
+  -descripcion: string
+  -vendedor_id: int
+  +verificarCapacidad(): bool
+  +transferirStock(): void
+}
+
+ENTITY Proveedor {
+  -id: int
+  -nombre: string
+  -telefono: string
+}
+
+ENTITY Compra {
+  -id: int
+  -id_correlativo: int
+  -fecha: date
+  -proveedor_id: int
+  -total: float
+  -descuento: float
+  -neto: float
+  -vendedor_id: int
+  +calcularTotal(): float
+  +confirmarCompra(): bool
+}
+
+ENTITY DetalleCompra {
+  -id: int
+  -compra_id: int
+  -almacen_id: int
+  -producto_id: int
+  -cantidad: int
+  -costo_unitario: float
+  +calcularSubtotal(): float
+}
+
+ENTITY Billetera {
+  -id: int
+  -codigo: string
+  -descripcion: string
+  -moneda: MonedaEnum
+  -vendedor_id: int
+  +consultarSaldo(): float
+  +registrarIngreso(): void
+}
+
+ENTITY Cobranza {
+  -id: int
+  -venta_id: int
+  -fecha: date
+  -importe: float
+  -observaciones: string
+  -billetera_id: int
+  -recibo: string
+  -vendedor_id: int
+  -porcentaje_comision: float
+  +procesarPago(): bool
+  +generarRecibo(): string
+}
+
+' Relaciones
+Usuario ||--o{ Vendedor : "vendedor_id"
+Vendedor ||--o{ Comision : "comision_id"
+
+Producto ||--o{ GrupoProducto : "grupo_id"
+Producto ||--o{ MarcaProducto : "marca_id"
+Producto ||--o{ LoteProducto : "producto_id"
+
+Cliente ||--o{ Zona : "zona_id"
+
+Venta ||--o{ Cliente : "cliente_id"
+Venta ||--o{ Vendedor : "vendedor_id"
+Venta ||--o{ DetalleVenta : "venta_id"
+
+DetalleVenta ||--o{ Almacen : "almacen_id"
+DetalleVenta ||--o{ Producto : "producto_id"
+DetalleVenta ||--o{ LoteProducto : "lote_id"
+
+Compra ||--o{ Proveedor : "proveedor_id"
+Compra ||--o{ Vendedor : "vendedor_id"
+Compra ||--o{ DetalleCompra : "compra_id"
+
+DetalleCompra ||--o{ Almacen : "almacen_id"
+DetalleCompra ||--o{ Producto : "producto_id"
+
+Almacen ||--o{ Vendedor : "vendedor_id"
+Billetera ||--o{ Vendedor : "vendedor_id"
+
+Cobranza ||--o{ Venta : "venta_id"
+Cobranza ||--o{ Billetera : "billetera_id"
+Cobranza ||--o{ Vendedor : "vendedor_id"
+
+@enduml

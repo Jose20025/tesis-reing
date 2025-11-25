@@ -24,7 +24,7 @@ export const SidebarCustomFooter = () => {
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.nombre}</span>
 
-              <Badge className="capitalize mt-1">{user.rol}</Badge>
+              <Badge className="capitalize mt-1">{user.tipo}</Badge>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>

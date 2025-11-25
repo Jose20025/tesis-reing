@@ -1,0 +1,281 @@
+@startuml Modelo Físico - Sistema de Ventas
+
+!define TABLE class
+
+' Definición de enumeraciones
+note as EnumNote
+**ENUMERACIONES:**
+• TipoUsuarioEnum: VENDEDOR, ADMINISTRADOR
+• TipoTransaccionEnum: VCR, VCO  
+• MonedaEnum: BOLIVIANOS, DOLARES
+end note
+
+' Tablas con tipos de datos específicos
+TABLE usuarios {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  nombre: VARCHAR(100) NOT NULL
+  username: VARCHAR(50) UNIQUE NOT NULL
+  password: VARCHAR(255) NOT NULL
+  vendedor_id: INT NULL
+  is_activo: BOOLEAN DEFAULT TRUE
+  tipo: ENUM('VENDEDOR','ADMINISTRADOR') NOT NULL
+  --
+  FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
+  INDEX idx_username (username)
+  INDEX idx_vendedor_id (vendedor_id)
+}
+
+TABLE vendedores {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(20) UNIQUE NOT NULL
+  nombre: VARCHAR(100) NOT NULL
+  departamento: VARCHAR(50) NOT NULL
+  is_activo: BOOLEAN DEFAULT TRUE
+  comision_id: INT NOT NULL
+  created_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  --
+  FOREIGN KEY (comision_id) REFERENCES comisiones(id)
+  INDEX idx_codigo (codigo)
+  INDEX idx_comision_id (comision_id)
+}
+
+TABLE comisiones {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  descripcion: VARCHAR(255) NOT NULL
+  periodo_1: INT NOT NULL
+  comision_1: DECIMAL(5,2) NOT NULL
+  periodo_2: INT NOT NULL
+  comision_2: DECIMAL(5,2) NOT NULL
+  periodo_3: INT NOT NULL
+  comision_3: DECIMAL(5,2) NOT NULL
+  --
+  CHECK (comision_1 >= 0 AND comision_2 >= 0 AND comision_3 >= 0)
+  CHECK (periodo_1 > 0 AND periodo_2 > 0 AND periodo_3 > 0)
+}
+
+TABLE clientes {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(20) UNIQUE NOT NULL
+  nombre: VARCHAR(100) NOT NULL
+  direccion: TEXT
+  telefono: VARCHAR(20)
+  zona_id: INT NOT NULL
+  --
+  FOREIGN KEY (zona_id) REFERENCES zonas(id)
+  INDEX idx_codigo (codigo)
+  INDEX idx_zona_id (zona_id)
+}
+
+TABLE zonas {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(10) UNIQUE NOT NULL
+  nombre: VARCHAR(50) NOT NULL
+  ciudad: VARCHAR(50) NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+}
+
+TABLE productos {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(30) UNIQUE NOT NULL
+  nombre: VARCHAR(150) NOT NULL
+  grupo_id: INT NOT NULL
+  marca_id: INT NOT NULL
+  costo: DECIMAL(12,2) NOT NULL DEFAULT 0
+  precio: DECIMAL(12,2) NOT NULL DEFAULT 0
+  is_activo: BOOLEAN DEFAULT TRUE
+  created_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  --
+  FOREIGN KEY (grupo_id) REFERENCES grupos_producto(id)
+  FOREIGN KEY (marca_id) REFERENCES marcas_producto(id)
+  INDEX idx_codigo (codigo)
+  INDEX idx_grupo_id (grupo_id)
+  INDEX idx_marca_id (marca_id)
+  CHECK (costo >= 0 AND precio >= 0)
+}
+
+TABLE grupos_producto {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(10) UNIQUE NOT NULL
+  descripcion: VARCHAR(100) NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+}
+
+TABLE marcas_producto {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(10) UNIQUE NOT NULL
+  descripcion: VARCHAR(100) NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+}
+
+TABLE lotes_producto {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  producto_id: INT NOT NULL
+  lote: VARCHAR(50) NOT NULL
+  cantidad_importada: INT NOT NULL DEFAULT 0
+  fecha_ingreso: DATE NOT NULL
+  mes_vencimiento: INT NOT NULL
+  año_vencimiento: INT NOT NULL
+  is_activo: BOOLEAN DEFAULT TRUE
+  created_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at: TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  --
+  FOREIGN KEY (producto_id) REFERENCES productos(id)
+  INDEX idx_producto_id (producto_id)
+  INDEX idx_lote (lote)
+  INDEX idx_vencimiento (año_vencimiento, mes_vencimiento)
+  CHECK (cantidad_importada >= 0)
+  CHECK (mes_vencimiento BETWEEN 1 AND 12)
+  UNIQUE KEY uk_producto_lote (producto_id, lote)
+}
+
+TABLE almacenes {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(10) UNIQUE NOT NULL
+  descripcion: VARCHAR(100) NOT NULL
+  vendedor_id: INT NOT NULL
+  --
+  FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
+  INDEX idx_codigo (codigo)
+  INDEX idx_vendedor_id (vendedor_id)
+}
+
+TABLE ventas {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  id_correlativo: INT NOT NULL
+  tipo_transaccion: ENUM('VCR','VCO') NOT NULL
+  fecha: DATE NOT NULL
+  cliente_id: INT NOT NULL
+  vendedor_id: INT NOT NULL
+  total: DECIMAL(12,2) NOT NULL DEFAULT 0
+  descuento: DECIMAL(12,2) NOT NULL DEFAULT 0
+  neto: DECIMAL(12,2) NOT NULL DEFAULT 0
+  --
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+  FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
+  INDEX idx_correlativo (id_correlativo)
+  INDEX idx_fecha (fecha)
+  INDEX idx_cliente_id (cliente_id)
+  INDEX idx_vendedor_id (vendedor_id)
+  CHECK (total >= 0 AND descuento >= 0 AND neto >= 0)
+}
+
+TABLE detalle_venta {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  venta_id: INT NOT NULL
+  almacen_id: INT NOT NULL
+  producto_id: INT NOT NULL
+  cantidad: INT NOT NULL
+  precio_unitario: DECIMAL(12,2) NOT NULL
+  lote_id: INT NOT NULL
+  --
+  FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE
+  FOREIGN KEY (almacen_id) REFERENCES almacenes(id)
+  FOREIGN KEY (producto_id) REFERENCES productos(id)
+  FOREIGN KEY (lote_id) REFERENCES lotes_producto(id)
+  INDEX idx_venta_id (venta_id)
+  INDEX idx_producto_id (producto_id)
+  INDEX idx_lote_id (lote_id)
+  CHECK (cantidad > 0 AND precio_unitario >= 0)
+}
+
+TABLE proveedores {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  nombre: VARCHAR(100) NOT NULL
+  telefono: VARCHAR(20)
+}
+
+TABLE compras {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  id_correlativo: INT NOT NULL
+  fecha: DATE NOT NULL
+  proveedor_id: INT NOT NULL
+  total: DECIMAL(12,2) NOT NULL DEFAULT 0
+  descuento: DECIMAL(12,2) NOT NULL DEFAULT 0
+  neto: DECIMAL(12,2) NOT NULL DEFAULT 0
+  vendedor_id: INT NOT NULL
+  --
+  FOREIGN KEY (proveedor_id) REFERENCES proveedores(id)
+  FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
+  INDEX idx_correlativo (id_correlativo)
+  INDEX idx_fecha (fecha)
+  INDEX idx_proveedor_id (proveedor_id)
+  INDEX idx_vendedor_id (vendedor_id)
+  CHECK (total >= 0 AND descuento >= 0 AND neto >= 0)
+}
+
+TABLE detalle_compra {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  compra_id: INT NOT NULL
+  almacen_id: INT NOT NULL
+  producto_id: INT NOT NULL
+  cantidad: INT NOT NULL
+  costo_unitario: DECIMAL(12,2) NOT NULL
+  --
+  FOREIGN KEY (compra_id) REFERENCES compras(id) ON DELETE CASCADE
+  FOREIGN KEY (almacen_id) REFERENCES almacenes(id)
+  FOREIGN KEY (producto_id) REFERENCES productos(id)
+  INDEX idx_compra_id (compra_id)
+  INDEX idx_producto_id (producto_id)
+  CHECK (cantidad > 0 AND costo_unitario >= 0)
+}
+
+TABLE billeteras {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  codigo: VARCHAR(10) UNIQUE NOT NULL
+  descripcion: VARCHAR(100) NOT NULL
+  moneda: ENUM('BOLIVIANOS','DOLARES') NOT NULL
+  vendedor_id: INT NOT NULL
+  --
+  FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
+  INDEX idx_codigo (codigo)
+  INDEX idx_vendedor_id (vendedor_id)
+}
+
+TABLE cobranzas {
+  + id: INT PRIMARY KEY AUTO_INCREMENT
+  venta_id: INT NOT NULL
+  fecha: DATE NOT NULL
+  importe: DECIMAL(12,2) NOT NULL
+  observaciones: TEXT
+  billetera_id: INT NOT NULL
+  recibo: VARCHAR(50)
+  vendedor_id: INT NOT NULL
+  porcentaje_comision: DECIMAL(5,2) NOT NULL DEFAULT 0
+  --
+  FOREIGN KEY (venta_id) REFERENCES ventas(id)
+  FOREIGN KEY (billetera_id) REFERENCES billeteras(id)
+  FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
+  INDEX idx_venta_id (venta_id)
+  INDEX idx_fecha (fecha)
+  INDEX idx_billetera_id (billetera_id)
+  INDEX idx_vendedor_id (vendedor_id)
+  INDEX idx_recibo (recibo)
+  CHECK (importe > 0 AND porcentaje_comision >= 0)
+}
+
+' Relaciones físicas (solo las más importantes para el diagrama)
+usuarios ||--o{ vendedores
+vendedores ||--o{ comisiones
+clientes ||--o{ zonas
+productos ||--o{ grupos_producto
+productos ||--o{ marcas_producto
+lotes_producto ||--o{ productos
+ventas ||--o{ clientes
+ventas ||--o{ vendedores
+detalle_venta ||--o{ ventas
+detalle_venta ||--o{ productos
+detalle_venta ||--o{ lotes_producto
+compras ||--o{ proveedores
+compras ||--o{ vendedores
+detalle_compra ||--o{ compras
+almacenes ||--o{ vendedores
+billeteras ||--o{ vendedores
+cobranzas ||--o{ ventas
+cobranzas ||--o{ billeteras
+
+@enduml

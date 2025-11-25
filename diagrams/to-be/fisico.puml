@@ -1,171 +1,295 @@
-@startuml ModeloFisicoCentralizado
+@startuml ModeloFisicoCompleto
 
-title Modelo físico (MariaDB/MySQL) - Módulo de vendedores
+title Modelo Físico (MariaDB/MySQL) - Sistema Integral de Ventas y Cobranzas
 
+' ===== TABLAS DE USUARIOS Y VENDEDORES =====
 entity "usuarios" as usuarios {
-  * id : INT AUTO_INCREMENT
+  * id : INT AUTO_INCREMENT PRIMARY KEY
   --
-  nombre      : VARCHAR(100)
-  username    : VARCHAR(50)
-  password    : VARCHAR(255)
-  vendedor_id : INT
-  is_activo   : TINYINT(1)
+  nombre      : VARCHAR(100) NOT NULL
+  username    : VARCHAR(50) UNIQUE NOT NULL
+  password    : VARCHAR(255) NOT NULL
+  vendedor_id : INT NULL
+  is_activo   : TINYINT(1) DEFAULT 1
+  tipo        : ENUM('VENDEDOR','ADMINISTRADOR') NOT NULL
+  --
+  INDEX idx_username (username)
+  INDEX idx_vendedor_id (vendedor_id)
 }
 
 entity "vendedores" as vendedores {
-  * id : INT AUTO_INCREMENT
+  * id : INT AUTO_INCREMENT PRIMARY KEY
   --
-  codigo     : VARCHAR(20)
-  nombre     : VARCHAR(150)
-  is_activo  : TINYINT(1)
-  created_at : DATETIME
-  updated_at : DATETIME
+  codigo       : VARCHAR(20) UNIQUE NOT NULL
+  nombre       : VARCHAR(150) NOT NULL
+  departamento : VARCHAR(100) NULL
+  is_activo    : TINYINT(1) DEFAULT 1
+  comision_id  : INT NULL
+  created_at   : DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at   : DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  --
+  INDEX idx_codigo (codigo)
+  INDEX idx_comision_id (comision_id)
 }
 
+entity "comisiones" as comisiones {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  descripcion : VARCHAR(200) NOT NULL
+  periodo_1   : INT NOT NULL
+  comision_1  : DECIMAL(5,2) NOT NULL
+  periodo_2   : INT NOT NULL
+  comision_2  : DECIMAL(5,2) NOT NULL
+  periodo_3   : INT NOT NULL
+  comision_3  : DECIMAL(5,2) NOT NULL
+}
+
+' ===== TABLAS DE PRODUCTOS =====
 entity "productos" as productos {
-  * id : INT AUTO_INCREMENT
+  * id : INT AUTO_INCREMENT PRIMARY KEY
   --
-  codigo     : VARCHAR(30)
-  nombre     : VARCHAR(200)
-  grupo_id   : INT
-  marca_id   : INT
-  costo      : DECIMAL(15,2)
-  precio     : DECIMAL(15,2)
-  is_activo  : TINYINT(1)
-  created_at : DATETIME
-  updated_at : DATETIME
-}
-
-entity "lotes_producto" as lotes_producto {
-  * id : INT AUTO_INCREMENT
+  codigo     : VARCHAR(30) UNIQUE NOT NULL
+  nombre     : VARCHAR(200) NOT NULL
+  grupo_id   : INT NOT NULL
+  marca_id   : INT NOT NULL
+  costo      : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  precio     : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  is_activo  : TINYINT(1) DEFAULT 1
+  created_at : DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at : DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   --
-  producto_id        : INT
-  lote               : VARCHAR(50)
-  cantidad_importada : INT
-  fecha_ingreso      : DATE
-  mes_vencimiento    : TINYINT
-  año_vencimiento    : SMALLINT
-  is_activo          : TINYINT(1)
-  created_at         : DATETIME
-  updated_at         : DATETIME
-}
-
-entity "venta" as venta {
-  * id : INT AUTO_INCREMENT
-  --
-  tipo_transaccion : ENUM('VCR','VCO')
-  fecha            : DATE
-  cliente_id       : INT
-  vendedor_id      : INT
-  total            : DECIMAL(15,2)
-  descuento        : DECIMAL(15,2)
-  neto             : DECIMAL(15,2)
-}
-
-entity "detalle_venta" as detalle_venta {
-  * id : INT AUTO_INCREMENT
-  --
-  venta_id       : INT
-  almacen_id     : INT
-  producto_id    : INT
-  cantidad       : INT
-  precio_unitario: DECIMAL(15,2)
-  lote_id        : INT
-}
-
-entity "almacenes" as almacenes {
-  * id : INT AUTO_INCREMENT
-  --
-  codigo      : VARCHAR(20)
-  descripcion : VARCHAR(150)
-  vendedor_id : INT
-}
-
-entity "clientes" as clientes {
-  * id : INT AUTO_INCREMENT
-  --
-  codigo    : VARCHAR(20)
-  nombre    : VARCHAR(200)
-  direccion : VARCHAR(255)
-  telefono  : VARCHAR(30)
-  zona_id   : INT
-}
-
-entity "zonas" as zonas {
-  * id : INT AUTO_INCREMENT
-  --
-  codigo : VARCHAR(20)
-  nombre : VARCHAR(150)
-  ciudad : VARCHAR(100)
-}
-
-entity "billeteras" as billeteras {
-  * id : INT AUTO_INCREMENT
-  --
-  codigo      : VARCHAR(20)
-  descripcion : VARCHAR(150)
-  moneda      : ENUM('BOLIVIANOS','DOLARES')
-  vendedor_id : INT
-}
-
-entity "cobranzas" as cobranzas {
-  * id : INT AUTO_INCREMENT
-  --
-  venta_id      : INT
-  fecha         : DATE
-  importe       : DECIMAL(15,2)
-  observaciones : VARCHAR(255)
-  billetera_id  : INT
-  recibo        : VARCHAR(50)
-  vendedor_id   : INT
-}
-
-entity "marcas_producto" as marcas_producto {
-  * id : INT AUTO_INCREMENT
-  --
-  codigo      : VARCHAR(20)
-  descripcion : VARCHAR(150)
+  INDEX idx_codigo (codigo)
+  INDEX idx_grupo_id (grupo_id)
+  INDEX idx_marca_id (marca_id)
+  INDEX idx_activo (is_activo)
 }
 
 entity "grupos_producto" as grupos_producto {
-  * id : INT AUTO_INCREMENT
+  * id : INT AUTO_INCREMENT PRIMARY KEY
   --
-  codigo      : VARCHAR(20)
-  descripcion : VARCHAR(150)
+  codigo      : VARCHAR(20) UNIQUE NOT NULL
+  descripcion : VARCHAR(150) NOT NULL
+  --
+  INDEX idx_codigo (codigo)
 }
 
-' Relación usuarios - vendedores
-usuarios }o--|| vendedores : "FK vendedor_id"
+entity "marcas_producto" as marcas_producto {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  codigo      : VARCHAR(20) UNIQUE NOT NULL
+  descripcion : VARCHAR(150) NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+}
 
-' Relaciones productos / catálogos
-productos }o--|| grupos_producto : "FK grupo_id"
-productos }o--|| marcas_producto : "FK marca_id"
+entity "lotes_producto" as lotes_producto {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  producto_id        : INT NOT NULL
+  lote               : VARCHAR(50) NOT NULL
+  cantidad_importada : INT NOT NULL DEFAULT 0
+  fecha_ingreso      : DATE NOT NULL
+  mes_vencimiento    : TINYINT NOT NULL
+  año_vencimiento    : SMALLINT NOT NULL
+  is_activo          : TINYINT(1) DEFAULT 1
+  created_at         : DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at         : DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  --
+  INDEX idx_producto_id (producto_id)
+  INDEX idx_lote (lote)
+  INDEX idx_vencimiento (año_vencimiento, mes_vencimiento)
+  UNIQUE KEY unique_producto_lote (producto_id, lote)
+}
 
-' Lotes
-lotes_producto }o--|| productos : "FK producto_id"
+' ===== TABLAS DE CLIENTES Y UBICACIÓN =====
+entity "clientes" as clientes {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  codigo    : VARCHAR(20) UNIQUE NOT NULL
+  nombre    : VARCHAR(200) NOT NULL
+  direccion : VARCHAR(255) NULL
+  telefono  : VARCHAR(30) NULL
+  zona_id   : INT NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+  INDEX idx_zona_id (zona_id)
+  INDEX idx_nombre (nombre)
+}
+
+entity "zonas" as zonas {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  codigo : VARCHAR(20) UNIQUE NOT NULL
+  nombre : VARCHAR(150) NOT NULL
+  ciudad : VARCHAR(100) NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+  INDEX idx_ciudad (ciudad)
+}
+
+' ===== TABLAS DE ALMACENES =====
+entity "almacenes" as almacenes {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  codigo      : VARCHAR(20) UNIQUE NOT NULL
+  descripcion : VARCHAR(150) NOT NULL
+  vendedor_id : INT NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+  INDEX idx_vendedor_id (vendedor_id)
+}
+
+' ===== TABLAS DE VENTAS =====
+entity "ventas" as ventas {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  id_correlativo   : INT NOT NULL
+  tipo_transaccion : ENUM('VCR','VCO') NOT NULL
+  fecha            : DATE NOT NULL
+  cliente_id       : INT NOT NULL
+  vendedor_id      : INT NOT NULL
+  total            : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  descuento        : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  neto             : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  --
+  INDEX idx_correlativo (id_correlativo)
+  INDEX idx_fecha (fecha)
+  INDEX idx_cliente_id (cliente_id)
+  INDEX idx_vendedor_id (vendedor_id)
+  INDEX idx_tipo_transaccion (tipo_transaccion)
+}
+
+entity "detalle_venta" as detalle_venta {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  venta_id        : INT NOT NULL
+  almacen_id      : INT NOT NULL
+  producto_id     : INT NOT NULL
+  cantidad        : INT NOT NULL DEFAULT 0
+  precio_unitario : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  lote_id         : INT NOT NULL
+  --
+  INDEX idx_venta_id (venta_id)
+  INDEX idx_producto_id (producto_id)
+  INDEX idx_almacen_id (almacen_id)
+  INDEX idx_lote_id (lote_id)
+}
+
+' ===== TABLAS DE COMPRAS =====
+entity "proveedores" as proveedores {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  nombre   : VARCHAR(200) NOT NULL
+  telefono : VARCHAR(30) NULL
+  --
+  INDEX idx_nombre (nombre)
+}
+
+entity "compras" as compras {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  id_correlativo : INT NOT NULL
+  fecha          : DATE NOT NULL
+  proveedor_id   : INT NOT NULL
+  total          : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  descuento      : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  neto           : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  vendedor_id    : INT NOT NULL
+  --
+  INDEX idx_correlativo (id_correlativo)
+  INDEX idx_fecha (fecha)
+  INDEX idx_proveedor_id (proveedor_id)
+  INDEX idx_vendedor_id (vendedor_id)
+}
+
+entity "detalle_compra" as detalle_compra {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  compra_id       : INT NOT NULL
+  almacen_id      : INT NOT NULL
+  producto_id     : INT NOT NULL
+  cantidad        : INT NOT NULL DEFAULT 0
+  costo_unitario  : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  --
+  INDEX idx_compra_id (compra_id)
+  INDEX idx_producto_id (producto_id)
+  INDEX idx_almacen_id (almacen_id)
+}
+
+' ===== TABLAS DE COBRANZAS =====
+entity "billeteras" as billeteras {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  codigo      : VARCHAR(20) UNIQUE NOT NULL
+  descripcion : VARCHAR(150) NOT NULL
+  moneda      : ENUM('BOLIVIANOS','DOLARES') NOT NULL
+  vendedor_id : INT NOT NULL
+  --
+  INDEX idx_codigo (codigo)
+  INDEX idx_vendedor_id (vendedor_id)
+  INDEX idx_moneda (moneda)
+}
+
+entity "cobranzas" as cobranzas {
+  * id : INT AUTO_INCREMENT PRIMARY KEY
+  --
+  venta_id           : INT NOT NULL
+  fecha              : DATE NOT NULL
+  importe            : DECIMAL(15,2) NOT NULL DEFAULT 0.00
+  observaciones      : VARCHAR(255) NULL
+  billetera_id       : INT NOT NULL
+  recibo             : VARCHAR(50) NULL
+  vendedor_id        : INT NOT NULL
+  porcentaje_comision: DECIMAL(5,2) NOT NULL DEFAULT 0.00
+  --
+  INDEX idx_venta_id (venta_id)
+  INDEX idx_fecha (fecha)
+  INDEX idx_billetera_id (billetera_id)
+  INDEX idx_vendedor_id (vendedor_id)
+  INDEX idx_recibo (recibo)
+}
+
+' ===== FOREIGN KEYS Y CONSTRAINTS =====
+
+' Usuarios y vendedores
+usuarios }o--|| vendedores : "FK vendedor_id REFERENCES vendedores(id) ON DELETE SET NULL"
+vendedores }o--|| comisiones : "FK comision_id REFERENCES comisiones(id) ON DELETE SET NULL"
+
+' Productos y catálogos
+productos }o--|| grupos_producto : "FK grupo_id REFERENCES grupos_producto(id) ON DELETE RESTRICT"
+productos }o--|| marcas_producto : "FK marca_id REFERENCES marcas_producto(id) ON DELETE RESTRICT"
+lotes_producto }o--|| productos : "FK producto_id REFERENCES productos(id) ON DELETE CASCADE"
+
+' Clientes y ubicación
+clientes }o--|| zonas : "FK zona_id REFERENCES zonas(id) ON DELETE RESTRICT"
+
+' Almacenes
+almacenes }o--|| vendedores : "FK vendedor_id REFERENCES vendedores(id) ON DELETE RESTRICT"
 
 ' Ventas
-venta }o--|| clientes : "FK cliente_id"
-venta }o--|| vendedores : "FK vendedor_id"
+ventas }o--|| clientes : "FK cliente_id REFERENCES clientes(id) ON DELETE RESTRICT"
+ventas }o--|| vendedores : "FK vendedor_id REFERENCES vendedores(id) ON DELETE RESTRICT"
+detalle_venta }o--|| ventas : "FK venta_id REFERENCES ventas(id) ON DELETE CASCADE"
+detalle_venta }o--|| almacenes : "FK almacen_id REFERENCES almacenes(id) ON DELETE RESTRICT"
+detalle_venta }o--|| productos : "FK producto_id REFERENCES productos(id) ON DELETE RESTRICT"
+detalle_venta }o--|| lotes_producto : "FK lote_id REFERENCES lotes_producto(id) ON DELETE RESTRICT"
 
-' Detalle de venta
-detalle_venta }o--|| venta : "FK venta_id"
-detalle_venta }o--|| almacenes : "FK almacen_id"
-detalle_venta }o--|| productos : "FK producto_id"
-detalle_venta }o--|| lotes_producto : "FK lote_id"
-
-' Clientes / zonas
-clientes }o--|| zonas : "FK zona_id"
-
-' Almacenes / vendedores
-almacenes }o--|| vendedores : "FK vendedor_id"
-
-' Billeteras / vendedores
-billeteras }o--|| vendedores : "FK vendedor_id"
+' Compras
+compras }o--|| proveedores : "FK proveedor_id REFERENCES proveedores(id) ON DELETE RESTRICT"
+compras }o--|| vendedores : "FK vendedor_id REFERENCES vendedores(id) ON DELETE RESTRICT"
+detalle_compra }o--|| compras : "FK compra_id REFERENCES compras(id) ON DELETE CASCADE"
+detalle_compra }o--|| almacenes : "FK almacen_id REFERENCES almacenes(id) ON DELETE RESTRICT"
+detalle_compra }o--|| productos : "FK producto_id REFERENCES productos(id) ON DELETE RESTRICT"
 
 ' Cobranzas
-cobranzas }o--|| venta : "FK venta_id"
-cobranzas }o--|| billeteras : "FK billetera_id"
-cobranzas }o--|| vendedores : "FK vendedor_id"
+billeteras }o--|| vendedores : "FK vendedor_id REFERENCES vendedores(id) ON DELETE RESTRICT"
+cobranzas }o--|| ventas : "FK venta_id REFERENCES ventas(id) ON DELETE RESTRICT"
+cobranzas }o--|| billeteras : "FK billetera_id REFERENCES billeteras(id) ON DELETE RESTRICT"
+cobranzas }o--|| vendedores : "FK vendedor_id REFERENCES vendedores(id) ON DELETE RESTRICT"
+
+note top of usuarios : "Tabla de autenticación\ny autorización del sistema"
+note top of ventas : "Transacciones de venta:\nVCR = Venta al Crédito\nVCO = Venta al Contado"
+note top of lotes_producto : "Control de inventario\npor lotes con vencimiento"
+note top of cobranzas : "Registro de pagos\ny cálculo de comisiones"
 
 @enduml

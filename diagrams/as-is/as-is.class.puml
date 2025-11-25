@@ -1,167 +1,268 @@
-@startuml as-is
-' Diagrama de clases As-Is (estructuras basadas en DBF)
+@startuml DiagramaClases
 
-class Almhead {
-  +tipotrans : string
-  +numtrans : int
-  +fecha : date
-  +vence : date
-  +codcli : string
-  +codprov : string
-  +codprom : string
-  +total : float
-  +dcto : float
-  +neto : float
+title Diagrama de Clases - Sistema de Ventas y Cobranzas
+
+' Enumeraciones
+enum TipoUsuarioEnum {
+  VENDEDOR
+  ADMINISTRADOR
 }
 
-class Almtrans {
-  +tipotrans : string
-  +numtrans : int
-  +codalm : string
-  +fecha : date
-  +codmat : string
-  +cantidad : float
-  +punit : float
-  +pcosto : float
-  +nrolote : string
+enum TipoTransaccionEnum {
+  VCR
+  VCO
+}
+
+enum MonedaEnum {
+  BOLIVIANOS
+  DOLARES
+}
+
+' Clases principales
+class Usuario {
+  +id : int
+  +nombre : string
+  +username : string
+  +password : string
+  +vendedor_id : int
+  +is_activo : bool
+  +tipo : TipoUsuarioEnum
+  --
+  +login() : bool
+  +logout() : void
+  +cambiarPassword() : bool
+}
+
+class Vendedor {
+  +id : int
+  +codigo : string
+  +nombre : string
+  +departamento : string
+  +is_activo : bool
+  +comision_id : int
+  +created_at : datetime
+  +updated_at : datetime
+  --
+  +registrarVenta() : Venta
+  +consultarComisiones() : List<Comision>
+  +gestionarAlmacenes() : List<Almacen>
+}
+
+class Comision {
+  +id : int
+  +descripcion : string
+  +periodo_1 : int
+  +comision_1 : float
+  +periodo_2 : int
+  +comision_2 : float
+  +periodo_3 : int
+  +comision_3 : float
+  --
+  +calcularComision(periodo: int) : float
 }
 
 class Cliente {
-  +codcli : string
+  +id : int
+  +codigo : string
   +nombre : string
   +direccion : string
   +telefono : string
-  +zona : string
-  +deuda : float
-  +tipocliente : string
-}
-
-class Pago {
-  +tipotrans : string
-  +numtrans : int
-  +fecha : date
-  +importe : float
-  +observ : string
-  +codbanco : string
-  +recibo : string
-  +estado : string
-}
-
-class Almmat {
-  +codmat : string
-  +descripcion : string
-  +grupo : string
-  +marca : string
-  +pcompra : float
-  +pventa : float
-  +stockmin : float
-  +activo : bool
-}
-
-class Almacen {
-  +codalm : string
-  +descripcion : string
-}
-
-class Grupo {
-  +codgrupo : string
-  +descripcion : string
-}
-
-class Marca {
-  +codmarca : string
-  +descripcion : string
-}
-
-class LoteMaster {
-  +codmat : string
-  +lote : string
-  +cantidad : int
-  +fingreso : date
-  +mesvenc : int
-  +anovenc : int
-  +activo : bool
-}
-
-class Banco {
-  +codigo : string
-  +detalle : string
-  +moneda : string
-  +saldo : float
+  +zona_id : int
+  --
+  +realizarCompra() : Venta
+  +consultarHistorial() : List<Venta>
 }
 
 class Zona {
+  +id : int
   +codigo : string
   +nombre : string
   +ciudad : string
-  +tipo : string
-  +padre : string
+  --
+  +obtenerClientes() : List<Cliente>
 }
 
-' ============================================================
-' NUEVAS ENTIDADES INVENTADAS (Pedidos y Gastos estilo VFP)
-' ============================================================
+class Producto {
+  +id : int
+  +codigo : string
+  +nombre : string
+  +grupo_id : int
+  +marca_id : int
+  +costo : number
+  +precio : number
+  +is_activo : bool
+  +created_at : datetime
+  +updated_at : datetime
+  --
+  +calcularGanancia() : number
+  +verificarStock() : int
+}
 
-class PedHead {
-  +numped : string
-  +fecreg : date
-  +codcli : string
-  +codprom : string
-  +estado : string
+class GrupoProducto {
+  +id : int
+  +codigo : string
+  +descripcion : string
+  --
+  +obtenerProductos() : List<Producto>
+}
+
+class MarcaProducto {
+  +id : int
+  +codigo : string
+  +descripcion : string
+  --
+  +obtenerProductos() : List<Producto>
+}
+
+class LoteProducto {
+  +id : int
+  +producto_id : int
+  +lote : string
+  +cantidad_importada : int
+  +fecha_ingreso : date
+  +mes_vencimiento : int
+  +año_vencimiento : int
+  +is_activo : bool
+  +created_at : datetime
+  +updated_at : datetime
+  --
+  +verificarVencimiento() : bool
+  +obtenerCantidadDisponible() : int
+}
+
+class Venta {
+  +id : int
+  +id_correlativo : int
+  +tipo_transaccion : TipoTransaccionEnum
+  +fecha : date
+  +cliente_id : int
+  +vendedor_id : int
   +total : float
-  +obs : string
+  +descuento : float
+  +neto : float
+  --
+  +calcularTotal() : float
+  +aplicarDescuento(descuento: float) : void
+  +generarRecibo() : string
 }
 
-class PedDet {
-  +numped : string
-  +item : int
-  +codmat : string
-  +cantidad : float
-  +punit : float
-  +subtotal : float
+class DetalleVenta {
+  +id : int
+  +venta_id : int
+  +almacen_id : int
+  +producto_id : int
+  +cantidad : int
+  +precio_unitario : float
+  +lote_id : int
+  --
+  +calcularSubtotal() : float
 }
 
-class GastoCab {
-  +numgasto : string
-  +fecreg : date
-  +codprom : string
-  +tipog : string
-  +glosa : string
+class Almacen {
+  +id : int
+  +codigo : string
+  +descripcion : string
+  +vendedor_id : int
+  --
+  +verificarInventario() : List<Producto>
+  +registrarMovimiento() : void
+}
+
+class Proveedor {
+  +id : int
+  +nombre : string
+  +telefono : string
+  --
+  +realizarCompra() : Compra
+}
+
+class Compra {
+  +id : int
+  +id_correlativo : int
+  +fecha : date
+  +proveedor_id : int
   +total : float
+  +descuento : float
+  +neto : float
+  +vendedor_id : int
+  --
+  +calcularTotal() : float
+  +registrarInventario() : void
 }
 
-class GastoDet {
-  +numgasto : string
-  +item : int
-  +codcta : string
-  +descri : string
-  +monto : float
+class DetalleCompra {
+  +id : int
+  +compra_id : int
+  +almacen_id : int
+  +producto_id : int
+  +cantidad : int
+  +costo_unitario : float
+  --
+  +calcularSubtotal() : float
+}
+
+class Billetera {
+  +id : int
+  +codigo : string
+  +descripcion : string
+  +moneda : MonedaEnum
+  +vendedor_id : int
+  --
+  +registrarCobranza() : Cobranza
+  +consultarSaldo() : float
+}
+
+class Cobranza {
+  +id : int
+  +venta_id : int
+  +fecha : date
+  +importe : float
+  +observaciones : string
+  +billetera_id : int
+  +recibo : string
+  +vendedor_id : int
+  +porcentaje_comision : float
+  --
+  +calcularComision() : float
+  +generarRecibo() : string
 }
 
 ' ============================================================
 ' RELACIONES
 ' ============================================================
 
-Almhead "1" --> "many" Almtrans : detalle
-Cliente "1" --> "many" Almhead : realiza
-Almhead "1" --> "many" Pago : pagos
-Almmat "1" --> "many" Almtrans : producto
-Almacen "1" --> "many" Almtrans : almacén
-Grupo "1" --> "many" Almmat : grupo
-Marca "1" --> "many" Almmat : marca
-Almmat "1" --> "many" LoteMaster : lotes
-Banco "1" --> "many" Pago : banco
-Zona "1" --> "many" Cliente : zona
+' Relaciones de usuarios y vendedores
+Usuario "*" --> "1" Vendedor : opera
+Vendedor "1" --> "*" Comision : tiene
 
-' ----- Relationalidad inventada coherente -----
+' Relaciones de productos
+Producto "*" --> "1" GrupoProducto : pertenece_a
+Producto "*" --> "1" MarcaProducto : es_de_marca
+Producto "1" --> "*" LoteProducto : se_importa_en
 
-Cliente "1" --> "many" PedHead : solicita
-PedHead "1" --> "many" PedDet : detalle
-Almmat "1" --> "many" PedDet : producto
+' Relaciones de ventas
+Venta "*" --> "1" Cliente : realizada_por
+Venta "*" --> "1" Vendedor : registrada_por
+Venta "1" --> "*" DetalleVenta : contiene
+DetalleVenta "*" --> "1" Producto : incluye
+DetalleVenta "*" --> "1" Almacen : desde
+DetalleVenta "*" --> "1" LoteProducto : utiliza
 
-GastoCab "1" --> "many" GastoDet : detalle
-GastoCab "many" --> "1" Cliente : asociado a cliente? (opcional)
-GastoCab "many" --> "1" Almhead : puede ligarse a transacción? (opcional)
-GastoCab "many" --> "1" PedHead : asociado a pedido? (opcional)
+' Relaciones de compras
+Compra "*" --> "1" Proveedor : realizada_a
+Compra "*" --> "1" Vendedor : registrada_por
+Compra "1" --> "*" DetalleCompra : contiene
+DetalleCompra "*" --> "1" Producto : incluye
+DetalleCompra "*" --> "1" Almacen : hacia
+
+' Relaciones de ubicación y almacenes
+Cliente "*" --> "1" Zona : ubicado_en
+Almacen "*" --> "1" Vendedor : gestionado_por
+
+' Relaciones de cobranzas
+Cobranza "*" --> "1" Venta : cancela
+Cobranza "*" --> "1" Billetera : registrada_en
+Cobranza "*" --> "1" Vendedor : gestionada_por
+Billetera "*" --> "1" Vendedor : pertenece_a
 
 @enduml

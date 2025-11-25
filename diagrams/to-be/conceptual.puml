@@ -1,45 +1,74 @@
-@startuml ModeloConceptualCentralizado
+@startuml ModeloConceptualCompleto
 
-title Modelo conceptual del módulo de vendedores - Importadora KAIS
+title Modelo Conceptual - Sistema Integral de Ventas y Cobranzas
 
-' Entidades principales
-class Vendedor
-class Usuario
-class Cliente
-class Zona
-class Producto
-class GrupoProducto
-class MarcaProducto
-class LoteProducto
-class Almacen
-class Venta
-class DetalleVenta
-class Billetera
-class Cobranza
+' Entidades del sistema de usuarios
+entity Usuario
+entity Vendedor
+entity Comision
 
-' Relaciones principales
-Vendedor "1" -- "0..*" Venta : registra
-Cliente  "1" -- "0..*" Venta : compra
-Venta    "1" -- "1..*" DetalleVenta : se_descompone_en
+' Entidades del catálogo de productos
+entity Producto
+entity GrupoProducto
+entity MarcaProducto
+entity LoteProducto
 
-Producto "1" -- "0..*" DetalleVenta : es_vendido_en
-Producto "1" -- "0..*" LoteProducto : se_importa_en
-LoteProducto "1" -- "0..*" DetalleVenta : se_utiliza_en
+' Entidades de clientes y ubicación
+entity Cliente
+entity Zona
 
-Vendedor "1" -- "0..*" Billetera : posee
-Billetera "1" -- "0..*" Cobranza : registra
-Venta "1" -- "0..*" Cobranza : se_cancela_con
+' Entidades de almacenes
+entity Almacen
 
-Zona "1" -- "0..*" Cliente : agrupa
-Vendedor "1" -- "0..*" Almacen : gestiona
-Almacen "1" -- "0..*" DetalleVenta : abastece
+' Entidades de ventas
+entity Venta
+entity DetalleVenta
 
-Vendedor "1" -- "0..*" Usuario : es_operado_por
+' Entidades de compras
+entity Proveedor
+entity Compra
+entity DetalleCompra
 
-Producto "1" -- "0..*" MarcaProducto : pertenece_a >
-MarcaProducto "1" -- "0..*" Producto
+' Entidades de cobranzas
+entity Billetera
+entity Cobranza
 
-Producto "1" -- "0..*" GrupoProducto : pertenece_a >
-GrupoProducto "1" -- "0..*" Producto
+' ===== RELACIONES CONCEPTUALES =====
+
+' Gestión de usuarios
+Usuario "*" -- "1" Vendedor : "opera como"
+Vendedor "*" -- "1" Comision : "tiene esquema de"
+
+' Catálogo de productos
+Producto "*" -- "1" GrupoProducto : "pertenece a"
+Producto "*" -- "1" MarcaProducto : "es de marca"
+Producto "1" -- "*" LoteProducto : "se importa en"
+
+' Gestión de clientes
+Cliente "*" -- "1" Zona : "reside en"
+
+' Gestión de almacenes
+Vendedor "1" -- "*" Almacen : "gestiona"
+
+' Proceso de ventas
+Vendedor "1" -- "*" Venta : "registra"
+Cliente "1" -- "*" Venta : "realiza"
+Venta "1" -- "*" DetalleVenta : "se compone de"
+DetalleVenta "*" -- "1" Producto : "incluye"
+DetalleVenta "*" -- "1" Almacen : "se despacha desde"
+DetalleVenta "*" -- "1" LoteProducto : "utiliza"
+
+' Proceso de compras (abastecimiento)
+Vendedor "1" -- "*" Compra : "registra"
+Proveedor "1" -- "*" Compra : "suministra"
+Compra "1" -- "*" DetalleCompra : "se compone de"
+DetalleCompra "*" -- "1" Producto : "incluye"
+DetalleCompra "*" -- "1" Almacen : "ingresa a"
+
+' Proceso de cobranzas
+Vendedor "1" -- "*" Billetera : "maneja"
+Vendedor "1" -- "*" Cobranza : "gestiona"
+Venta "1" -- "*" Cobranza : "se cancela mediante"
+Billetera "1" -- "*" Cobranza : "registra"
 
 @enduml
